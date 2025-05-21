@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detajet e Librit</title>
+    <link rel="stylesheet" href="Style/style.css">
+    <link rel="stylesheet" href="Style/style2.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.7.1/css/all.css" />
+</head>
+<body>
+    <div class="menu">
+        <div class="of-screne-menu">
+            <ul>
+                <li class="kategori"><strong>Kategorit</strong></li>
+                <hr style="width: 99%; margin-left: -11px; margin-bottom: 30px;" />
+                <li class="dropdown">
+                    <a href="#">Art,Arkitekture edhe Dizajn</a> <i class="fa-solid fa-chevron-down"></i>
+                    <ul class="dropdown-content">
+                        <li><a href="#" class="genre-link">Albania Artist</a></li>
+                        <li><a href="#" class="genre-link">Arkitekt edhe Artist</a></li>
+                        <li><a href="#" class="genre-link">Art Bashkëkohor</a></li>
+                        <li><a href="#" class="genre-link">Art dhe Arkitekturë Peizazhi</a></li>
+                        <li><a href="#" class="genre-link">Dizajn</a></li>
+                        <li><a href="#" class="genre-link">Dizajn Industrial</a></li>
+                        <li><a href="#" class="genre-link">Histori dhe Kritikë Arti</a></li>
+                        <li><a href="#" class="genre-link">Self Help</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">RomaneLibra për Shqipërinë</a> <i class="fa-solid fa-chevron-down"></i>
+                    <ul class="dropdown-content">
+                        <li><a href="#" class="genre-link">Subcategory 1</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 2</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 3</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 4</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Self Help</a> <i class="fa-solid fa-chevron-down"></i>
+                    <ul class="dropdown-content">
+                        <li><a href="#" class="genre-link">Subcategory 1</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 2</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 3</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Klasike</a> <i class="fa-solid fa-chevron-down"></i>
+                    <ul class="dropdown-content">
+                        <li><a href="#" class="genre-link">Subcategory 1</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 2</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 3</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 4</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Libra për Fëmijë</a> <i class="fa-solid fa-chevron-down"></i>
+                    <ul class="dropdown-content">
+                        <li><a href="#" class="genre-link">Subcategory 1</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 2</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 3</a></li>
+                        <li><a href="#" class="genre-link">Subcategory 4</a></li>
+                    </ul>
+                </li>
+                <li class="kategori"><strong>Info</strong></li>
+                <hr style="width: 99%; margin-left: -11px; margin-bottom: 30px;" />
+                <li style="text-align: center; margin-right: 35px;"><a href="">Rreth Nesh</a></li>
+                <li style="text-align: center; margin-right: 35px;"><a href="">Kontakt</a></li>
+                <li style="text-align: center; margin-right: 35px;"><a href="">Kushtet e Përdorimit</a></li>
+            </ul>
+        </div>
+
+        <nav>
+            <div class="ham-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search..." id="search-input" autocomplete="off" />
+            <div id="search-results" class="search-results" style="display: none;"></div>
+          </div>
+
+        <div class="menu-right">
+            <a><i class="fa-light fa-user"></i></a>
+            <a><i class="fa-light fa-heart"></i></a>
+            <div class="icon-cart">
+                <button><i class="fa-light fa-cart-shopping"></i>Basket</button>
+                <span id="cartCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="carTop" id="carTop">
+        <h1>Shopping Cart</h1>
+        <div class="listCart" id="listCart"></div>
+        <div class="btn">
+          <button class="close" id="closeCart">CLOSE</button>
+          <button class="checkOut">CHECK OUT</button>
+        </div>
+      </div>
+      
+      <div class="checkout" id="checkout">
+        <h1>Checkout</h1>
+        <div class="checkoutItems" id="checkoutItems"></div>
+        <div class="checkoutInfo">
+          <p>Për të përfunduar blerjen, ju lutemi plotësoni të dhënat tuaja më poshtë. Pas plotësimit të formularit, porosia juaj do të regjistrohet dhe do të kontaktoheni nga ekipi ynë për konfirmim dhe detaje të pagesës. Ju faleminderit për besimin!</p>
+        </div>
+        <div class="totalCost" id="totalCost">
+          <p>Totali (me postë): <span id="totalAmount">0 LEK</span></p>
+        </div>
+        <form id="checkoutForm">
+          <h3>Plotësoni Formularin</h3>
+          <label for="firstName">Emri:</label>
+          <input type="text" id="firstName" name="firstName" required>
+          <label for="lastName">Mbiemri:</label>
+          <input type="text" id="lastName" name="lastName" required>
+          <label for="phone">Numri i Telefonit:</label>
+          <input type="tel" id="phone" name="phone" required>
+          <label for="city">Qyteti:</label>
+          <input type="text" id="city" name="city" required>
+          <label for="state">Shteti:</label>
+          <select id="state" name="state" required>
+            <option value="">Zgjidh Shtetin</option>
+            <option value="Shqipëri">Shqipëri</option>
+            <option value="Kosovë">Kosovë</option>
+          </select>
+          <label for="address">Adresa:</label>
+          <input type="text" id="address" name="address" required>
+          <div class="btn">
+            <button type="button" class="close" id="closeCheckout">CLOSE</button>
+            <button type="submit" class="submitOrder">SUBMIT ORDER</button>
+          </div>
+        </form>
+      </div>
+
+    <div class="book-details">
+        <img id="book-image" src="" alt="">
+        <div class="pjesa-tjeter">
+            <a href="">
+                <p id="book-genre"></p>
+            </a>
+            <p id="book-title"></p>
+            <div class="pjesa">
+                <span class="rectangle-span"></span>
+                <p id="book-author"></p>
+                <span class="rectangle-span"></span>
+            </div>
+            <p id="book-price"></p>
+            <p id="book-long-description"></p>
+            <button class="add" id="addToBasketButton"><i class="fa-light fa-cart-shopping"></i>Add to Basket</button>
+        </div>
+    </div>
+
+    <div class="tabela">
+        <table>
+            <tr>
+                <td>Pershkrimi</td>
+                <td id="Pershkrimi"></td>
+            </tr>
+            <tr>
+                <td>Shtepia Botuese</td>
+                <td id="Shtepia"></td>
+            </tr>
+            <tr>
+                <td>Nurmi i faqeve</td>
+                <td id="faqet"></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // Merr id-në e produktit nga URL
+        function getProductIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('id'), 10);
+        }
+
+        const bookId = getProductIdFromURL();
+
+        // Ngarko detajet e librit nga JSON
+        fetch('Backend/Librat.json')
+            .then(response => response.json())
+            .then(data => {
+                const selectedBook = data.find(item => item.id === bookId);
+                if (selectedBook) {
+                    document.getElementById('book-title').textContent = selectedBook.title;
+                    document.getElementById('book-image').src = selectedBook.image;
+                    document.getElementById('book-image').alt = selectedBook.title;
+                    document.getElementById('book-author').textContent = selectedBook.author;
+                    document.getElementById('book-genre').textContent = selectedBook.genre;
+                    document.getElementById('book-price').textContent = selectedBook.price + ' LEKË';
+                    document.getElementById('book-long-description').textContent = selectedBook.longDescription;
+                    document.getElementById('Pershkrimi').textContent = selectedBook.Pershkrimi;
+                    document.getElementById('Shtepia').textContent = selectedBook.Botimi;
+                    document.getElementById('faqet').textContent = selectedBook.Page;
+
+                    // Vendos id-në për butonin "Add to Basket" që të përdoret nga Javascript.js
+                    const addToBasketButton = document.getElementById('addToBasketButton');
+                    addToBasketButton.setAttribute('data-id', selectedBook.id);
+                } else {
+                    document.querySelector('.book-details').innerHTML = '<p>Ky libër nuk u gjet!</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Gabim gjatë marrjes së të dhënave nga JSON:', error);
+                document.querySelector('.book-details').innerHTML = '<p>Gabim gjatë ngarkimit të detajeve të produktit.</p>';
+            });
+    </script>
+    <script src="Backend/Javascript.js"></script>
+</body>
+</html>

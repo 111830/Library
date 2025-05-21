@@ -1,0 +1,150 @@
+
+
+.book-details {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 100px;
+}
+
+.book-details img {
+    width: 20%;
+}
+
+.book-details .pjesa-tjeter {
+    text-align: center;
+    max-width: 35%;
+    margin-top: 50px;
+}
+
+.book-details .pjesa-tjeter p:nth-child(1) {
+    display: inline-block;
+    margin: 0 5px 0 5px;
+    color: #333333;
+    font-size: 15px;
+    line-height: 22px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--primary-color);
+    --primary-color: #1e508e;
+    cursor: pointer;
+}
+
+.book-details .pjesa-tjeter p:nth-child(2) {
+    font-size: 24px;
+    margin-bottom: 0;
+}
+
+.book-details .pjesa-tjeter p:nth-child(4) {
+    font-size: 28px;
+    font-family: "media-77", sans-serif;
+    font-size: 20px;
+}
+
+.book-details .pjesa-tjeter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.pjesa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.book-details .pjesa-tjeter .pjesa p {
+    margin-top: 0;
+}
+
+.rectangle-span {
+    width: 60px;
+    height: 2px;
+    background-color: #aaaaaa;
+}
+
+#book-author {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+.book-details .pjesa-tjeter button {
+    padding: 7px;
+    background-color: #6B1A1A;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px;
+}
+
+.tabela {
+    width: 90%;
+    max-width: 1000px;
+    margin: 50px auto;
+    border-collapse: collapse;
+    font-family: var(--font-family-primary);
+    font-size: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 100px;
+}
+
+.tabela table {
+    width: 100%;
+    border: none;
+}
+
+.tabela th, .tabela td {
+    text-align: left;
+    padding: 15px 20px;
+    vertical-align: middle;
+    vertical-align: top;
+}
+
+.tabela th {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.tabela tr:nth-child(even) {
+    background-color: var(--background-color);
+}
+
+.tabela tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.tabela tr:hover {
+    background-color: #f1f1f1;
+}
+
+.tabela td#Pershkrimi {
+    text-align: justify; 
+    line-height: 1.8;
+    color: #555555;
+}
+
+@media (max-width: 768px) {
+    .book-details {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .book-details img {
+        width: 80%;
+    }
+
+    .book-details .pjesa-tjeter {
+        max-width: 100%;
+    }
+
+    .tabela {
+        width: 100%;
+    }
+}
