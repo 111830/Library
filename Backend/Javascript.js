@@ -1,44 +1,52 @@
-/*-------------------------------------------
-    Slider Functionality
--------------------------------------------*/
-const initslider = () => { 
-  const slideButtons = document.querySelectorAll('.slide-button');
+const initslider = () => {
+  const sliders = document.querySelectorAll('.slider-wrapper');
 
-  slideButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const slider = button.closest('.slider-wrapper');
-      if (!slider) return;
-      const booklist = slider.querySelector('.book-list');
-      if (!booklist) return;
+  sliders.forEach(slider => {
+    const bookList = slider.querySelector('.book-list');
+    const prevSlideBtn = slider.querySelector('#prev-slide');
+    const nextSlideBtn = slider.querySelector('#next-slide');
 
-      const direction = button.id === "prev-slide" ? -1 : 1;
-      const scrollAmount = booklist.clientWidth * direction;
-      booklist.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    });
-  });
+    const handleSlideButtons = () => {
+      if (!bookList || !prevSlideBtn || !nextSlideBtn) return;
+      prevSlideBtn.style.display = bookList.scrollLeft > 1 ? "block" : "none";
+      let isAtEnd = bookList.scrollLeft + bookList.clientWidth >= bookList.scrollWidth - 1;
+      nextSlideBtn.style.display = isAtEnd ? "none" : "block";
+    };
 
-  const booklists = document.querySelectorAll('.book-list');
-  booklists.forEach(booklist => {
-    const slider = booklist.closest('.slider-wrapper');
-    if (slider) {
-      booklist.addEventListener('scroll', () => {
+    if (prevSlideBtn) {
+      prevSlideBtn.addEventListener('click', () => {
+        const scrollAmount = -bookList.clientWidth;
+        bookList.scrollBy({ left: scrollAmount, behavior: 'smooth' });
       });
     }
+
+    if (nextSlideBtn) {
+      nextSlideBtn.addEventListener('click', () => {
+        const scrollAmount = bookList.clientWidth;
+        bookList.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      });
+    }
+
+    if (bookList) {
+      bookList.addEventListener('scroll', () => {
+        handleSlideButtons();
+      });
+    }
+
+    window.addEventListener('load', () => handleSlideButtons());
+    window.addEventListener('resize', () => handleSlideButtons());
   });
 };
 
-window.addEventListener('load', initslider);
+initslider();
 
-/*-------------------------------------------
-    Filter me Select Dropdown
--------------------------------------------*/
 const selectGenre = document.getElementById('auto');
 const firstContainer = document.querySelector('.container');
 const firstRowBooks = firstContainer ? firstContainer.querySelectorAll('.book-list .all') : [];
 let lastSelectedGenre = 'all';
 
 if (selectGenre) {
-  selectGenre.addEventListener('change', function() {
+  selectGenre.addEventListener('change', function () {
     const selectedGenre = this.value;
     if (selectedGenre === lastSelectedGenre) {
       filterBooks('all');
@@ -52,7 +60,7 @@ if (selectGenre) {
 }
 
 function filterBooks(genre) {
-  firstRowBooks.forEach(function(book) {
+  firstRowBooks.forEach(function (book) {
     if (genre === 'all' || book.getAttribute('data-genre') === genre) {
       book.style.display = 'flex';
     } else {
@@ -61,9 +69,6 @@ function filterBooks(genre) {
   });
 }
 
-/*-------------------------------------------
-    Genre Filtering me Dropdown Links
--------------------------------------------*/
 let booksDataForGenre = [];
 let basket = JSON.parse(localStorage.getItem('basket')) || [];
 
@@ -76,6 +81,9 @@ fetch('Backend/Librat.json')
   })
   .then(data => {
     booksDataForGenre = data;
+    updateStaticTopSellers();
+    displayNewBooks();
+    initInfoLinks();
 
     const genreLinksDropdown = document.querySelectorAll('.dropdown-content .genre-link');
     if (genreLinksDropdown.length === 0) {
@@ -86,8 +94,6 @@ fetch('Backend/Librat.json')
       link.addEventListener('click', function (e) {
         e.preventDefault();
         const selectedGenre = this.textContent.trim().toLowerCase();
-        console.log('Selected genre (dropdown):', selectedGenre);
-
         localStorage.setItem('lastGenre', selectedGenre);
         window.location.href = `index.html?genre=${encodeURIComponent(selectedGenre)}`;
       });
@@ -105,62 +111,94 @@ fetch('Backend/Librat.json')
     const params = new URLSearchParams(window.location.search);
     const lastGenre = params.get('genre');
     const lastAuthor = params.get('author');
+    const offerFilter = params.get('filter');
+
+    const hideMainPageSections = () => {
+      const sectionsToHide = [
+        document.querySelector('.hero-section-background'),
+        document.querySelector('.zhvillim'),
+        ...document.querySelectorAll('.container'),
+        document.querySelector('.rekomandimet'),
+        document.querySelector('.lib-femije-seksion-bg'),
+        document.querySelector('.autor-dinamik-mbajtesi'),
+        document.querySelector('.seksion-oferte')
+      ];
+      sectionsToHide.forEach(section => {
+        if (section) {
+          section.style.display = "none";
+        }
+      });
+    };
 
     if (lastGenre) {
-      const lookScrene = document.querySelector('.look-screne');
-      const zhvillim = document.querySelector('.zhvillim');
-      const containers = document.querySelectorAll('.container');
-      const rekomandimet = document.querySelector('.rekomandimet');
-
-      if (lookScrene) lookScrene.style.display = "none";
-      if (zhvillim) zhvillim.style.display = "none";
-      containers.forEach(container => {
-        container.style.display = "none";
-      });
-      if (rekomandimet) {
-        rekomandimet.style.display = "none";
-      }
+      hideMainPageSections();
       filterBooksByGenre(lastGenre);
     } else if (lastAuthor) {
+      hideMainPageSections();
       filterBooksByAuthor(decodeURIComponent(lastAuthor));
+    } else if (offerFilter === 'oferta') {
+      hideMainPageSections();
+      filterBooksByOffer();
     }
 
     window.addEventListener('popstate', function (event) {
-      const lookScrene = document.querySelector('.look-screne');
-      const zhvillim = document.querySelector('.zhvillim');
-      const containers = document.querySelectorAll('.container');
-      const rekomandimet = document.querySelector('.rekomandimet');
-
-      if (event.state && event.state.genre) {
-        if (lookScrene) lookScrene.style.display = "none";
-        if (zhvillim) zhvillim.style.display = "none";
-        containers.forEach(container => {
-          container.style.display = "none";
-        });
-        if (rekomandimet) {
-          rekomandimet.style.display = "none";
-        }
-        filterBooksByGenre(event.state.genre);
-      } else if (event.state && event.state.author) {
-        filterBooksByAuthor(event.state.author);
-      } else {
-        if (lookScrene) lookScrene.style.display = "flex";
-        if (zhvillim) zhvillim.style.display = "block";
-        containers.forEach(container => {
-          container.style.display = "block";
-        });
-        if (rekomandimet) {
-          rekomandimet.style.display = "block";
-        }
-        const container = document.getElementById('koherenc');
-        if (container) container.style.display = "none";
+      const hamMenu = document.querySelector('.ham-menu');
+      const ofScreneMenu = document.querySelector('.of-screne-menu');
+      if (hamMenu) {
+        hamMenu.classList.remove('active');
+        hamMenu.setAttribute('aria-expanded', 'false');
       }
+      if (ofScreneMenu) {
+        ofScreneMenu.classList.remove('active');
+        ofScreneMenu.style.left = window.innerWidth <= 768 ? '-100%' : '-450px';
+      }
+
+      const dropdowns = document.querySelectorAll('.dropdown');
+      dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('active');
+        const dropdownContent = dropdown.querySelector('.dropdown-content');
+        const icon = dropdown.querySelector('i');
+        if (dropdownContent) {
+          dropdownContent.style.display = 'none';
+        }
+        if (icon) {
+          icon.classList.remove('fa-chevron-up');
+          icon.classList.add('fa-chevron-down');
+        }
+      });
+
+      const mainPageSections = [
+        document.querySelector('.hero-section-background'),
+        document.querySelector('.zhvillim'),
+        ...document.querySelectorAll('.container'),
+        document.querySelector('.rekomandimet'),
+        document.querySelector('.lib-femije-seksion-bg'),
+        document.querySelector('.autor-dinamik-mbajtesi'),
+        document.querySelector('.seksion-oferte')
+      ];
+      const filterContainer = document.getElementById('koherenc');
+
+      if (window.location.search === '') {
+        mainPageSections.forEach(section => {
+          if (section) section.style.display = '';
+        });
+        if (filterContainer) filterContainer.style.display = 'none';
+      } else {
+        mainPageSections.forEach(section => {
+          if (section) section.style.display = 'none';
+        });
+        if (filterContainer) filterContainer.style.display = 'block';
+      }
+
       renderBasket();
     });
 
     const addButtons = document.querySelectorAll('.add');
     addButtons.forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
         const productId = parseInt(button.getAttribute('data-id'), 10);
         const productFound = booksDataForGenre.find(p => p.id === productId);
         if (!productFound) return;
@@ -169,10 +207,11 @@ fetch('Backend/Librat.json')
         if (foundIndex > -1) {
           basket[foundIndex].quantity += 1;
         } else {
+          const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
           basket.push({
             id: productFound.id,
             name: productFound.title,
-            price: productFound.price,
+            price: priceToUse,
             image: productFound.image,
             quantity: 1
           });
@@ -181,13 +220,21 @@ fetch('Backend/Librat.json')
         const carTop = document.getElementById('carTop');
         if (carTop) carTop.classList.add('active');
         renderBasket();
+
+        button.textContent = 'U shtua!';
+        button.disabled = true;
+        setTimeout(() => {
+          button.innerHTML = '<i class="fa-light fa-cart-shopping"></i>Add to Basket';
+          button.disabled = false;
+        }, 1500);
       });
     });
 
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
+    const searchBar = document.querySelector('.search-bar');
 
-    if (searchInput && searchResults) {
+    if (searchInput && searchResults && searchBar) {
       searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim().toLowerCase();
 
@@ -196,12 +243,12 @@ fetch('Backend/Librat.json')
           return;
         }
 
-        const matchingBooks = booksDataForGenre.filter(book => 
-          book.title.toLowerCase().includes(query) || 
+        const matchingBooks = booksDataForGenre.filter(book =>
+          book.title.toLowerCase().includes(query) ||
           book.author.toLowerCase().trim() === query
         );
 
-        const matchingAuthors = [...new Set(booksDataForGenre.map(book => book.author).filter(author => 
+        const matchingAuthors = [...new Set(booksDataForGenre.map(book => book.author).filter(author =>
           author.toLowerCase().trim().includes(query)
         ))];
 
@@ -227,7 +274,6 @@ fetch('Backend/Librat.json')
           authorItem.innerHTML = `<span>${author}</span>`;
           authorItem.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Klikuar autori:', author);
             window.location.href = `index.html?author=${encodeURIComponent(author)}`;
           });
           searchResults.appendChild(authorItem);
@@ -243,12 +289,12 @@ fetch('Backend/Librat.json')
           const query = searchInput.value.trim().toLowerCase();
           if (query === '') return;
 
-          const matchingBooks = booksDataForGenre.filter(book => 
-            book.title.toLowerCase().includes(query) || 
+          const matchingBooks = booksDataForGenre.filter(book =>
+            book.title.toLowerCase().includes(query) ||
             book.author.toLowerCase().trim() === query
           );
 
-          const matchingAuthors = [...new Set(booksDataForGenre.map(book => book.author).filter(author => 
+          const matchingAuthors = [...new Set(booksDataForGenre.map(book => book.author).filter(author =>
             author.toLowerCase().trim().includes(query)
           ))];
 
@@ -256,8 +302,6 @@ fetch('Backend/Librat.json')
             window.location.href = `index1.html?id=${matchingBooks[0].id}`;
           } else if (matchingAuthors.length > 0) {
             window.location.href = `index.html?author=${encodeURIComponent(matchingAuthors[0])}`;
-          } else {
-            console.log('Asnjë rezultat për:', query);
           }
 
           searchResults.style.display = 'none';
@@ -339,7 +383,7 @@ fetch('Backend/Librat.json')
         const items = basket.map(item => `${item.name} - ${item.quantity} x ${item.price} LEK`).join('\n');
         const total = totalAmountSpan ? totalAmountSpan.textContent : '0 LEK';
         const message = `Porosi e re:%0AEmri: ${firstName}%0AMbiemri: ${lastName}%0ANumri i Telefonit: ${phone}%0AQyteti: ${city}%0AShteti: ${state}%0AAdresa: ${address}%0AArtikujt:%0A${items}%0ATotali: ${total}`;
-        const whatsappNumber = "+355683544145"; 
+        const whatsappNumber = "+355683544145";
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
@@ -366,7 +410,7 @@ fetch('Backend/Librat.json')
     renderBasket();
   })
   .catch(err => {
-    console.error('Gabim gjatë leximit të Librat.json për genre dropdown:', err);
+    console.error('Gabim gjatë leximit të Librat.json:', err);
   });
 
 function filterBooksByGenre(selectedGenre) {
@@ -374,8 +418,6 @@ function filterBooksByGenre(selectedGenre) {
     let genresArray = Array.isArray(book.genre) ? book.genre : [book.genre];
     return genresArray.some(g => g && g.trim().toLowerCase() === selectedGenre);
   });
-
-  console.log('Filtered Books (dropdown):', filteredBooks);
 
   const resultCountSpan = document.getElementById('resultCount');
   if (resultCountSpan) {
@@ -399,13 +441,25 @@ function filterBooksByGenre(selectedGenre) {
   filteredBooks.forEach(book => {
     const li = document.createElement('li');
     li.id = `book-${book.id}`;
+
+    let priceHTML = '';
+    if (book.offerPrice && book.offerPrice > 0) {
+      priceHTML = `
+            <p class="price">
+                <del>${book.price} LEKE</del> 
+                <span class="offer-price">${book.offerPrice} LEKE</span>
+            </p>`;
+    } else {
+      priceHTML = `<p class="price">${book.price} LEKE</p>`;
+    }
+
     li.innerHTML = `
       <a href="index1.html?id=${book.id}" class="book-link" data-genre="${selectedGenre}">
         <img src="${book.image}" alt="${book.title}">
         <div class="shkrimet">
           <p class="titulli"><strong>${book.title}</strong></p>
           <p class="autori">${book.author}</p>
-          <p class="price">${book.price} LEKE</p>
+          ${priceHTML}
         </div>
       </a>
       <button class="add" data-id="${book.id}">
@@ -429,10 +483,11 @@ function filterBooksByGenre(selectedGenre) {
       if (foundIndex > -1) {
         basket[foundIndex].quantity += 1;
       } else {
+        const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
         basket.push({
           id: productFound.id,
           name: productFound.title,
-          price: productFound.price,
+          price: priceToUse,
           image: productFound.image,
           quantity: 1
         });
@@ -554,17 +609,28 @@ function filterBooksByGenre(selectedGenre) {
     updatedBooks.forEach(book => {
       const li = document.createElement('li');
       li.id = `book-${book.id}`;
+      let priceHTML = '';
+      if (book.offerPrice && book.offerPrice > 0) {
+        priceHTML = `
+        <p class="price">
+            <del>${book.price} LEKE</del> 
+            <span class="offer-price">${book.offerPrice} LEKE</span>
+        </p>`;
+      } else {
+        priceHTML = `<p class="price">${book.price} LEKE</p>`;
+      }
+
       li.innerHTML = `
-        <a href="index1.html?id=${book.id}" class="book-link" data-genre="${selectedGenre}">
-          <img src="${book.image}" alt="${book.title}">
-          <div class="shkrimet">
+        <a href="index1.html?id=${book.id}" class="book-link" data-genre="${book.genre}">
+        <img src="${book.image}" alt="${book.title}">
+        <div class="shkrimet">
             <p class="titulli"><strong>${book.title}</strong></p>
             <p class="autori">${book.author}</p>
-            <p class="price">${book.price} LEKE</p>
-          </div>
+            ${priceHTML}
+        </div>
         </a>
         <button class="add" data-id="${book.id}">
-          <i class="fa-light fa-cart-shopping"></i> Add to Basket
+        <i class="fa-light fa-cart-shopping"></i> Add to Basket
         </button>
       `;
       bookListEl.appendChild(li);
@@ -585,10 +651,11 @@ function filterBooksByGenre(selectedGenre) {
         if (foundIndex > -1) {
           basket[foundIndex].quantity += 1;
         } else {
+          const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
           basket.push({
             id: productFound.id,
             name: productFound.title,
-            price: productFound.price,
+            price: priceToUse,
             image: productFound.image,
             quantity: 1
           });
@@ -617,28 +684,19 @@ function filterBooksByGenre(selectedGenre) {
   addCheckboxListeners();
 }
 
+
 function filterBooksByAuthor(author) {
-  console.log('Filtrimi për autorin:', author);
   const filteredBooks = booksDataForGenre.filter(book => {
     const bookAuthor = book.author.toLowerCase().trim();
     const searchAuthor = author.toLowerCase().trim();
-    const matches = bookAuthor === searchAuthor;
-    console.log(`Krahasimi: book.author='${bookAuthor}', author='${searchAuthor}', përputhet: ${matches}`);
-    return matches;
+    return bookAuthor === searchAuthor;
   });
-  console.log('Librat e filtruar për autorin (pas filtrimit):', filteredBooks, 'Gjatësia:', filteredBooks.length);
 
   const container = document.getElementById('koherenc');
-  if (!container) {
-    console.error('Container me id "koherenc" nuk u gjet!');
-    return;
-  }
+  if (!container) return;
 
   const bookListEl = container.querySelector('.book-list');
-  if (!bookListEl) {
-    console.error('Elementi .book-list nuk u gjet brenda container-it!');
-    return;
-  }
+  if (!bookListEl) return;
 
   const lookScrene = document.querySelector('.look-screne');
   const zhvillim = document.querySelector('.zhvillim');
@@ -658,13 +716,25 @@ function filterBooksByAuthor(author) {
   filteredBooks.forEach(book => {
     const li = document.createElement('li');
     li.id = `book-${book.id}`;
+
+    let priceHTML = '';
+    if (book.offerPrice && book.offerPrice > 0) {
+      priceHTML = `
+            <p class="price">
+                <del>${book.price} LEKE</del> 
+                <span class="offer-price">${book.offerPrice} LEKE</span>
+            </p>`;
+    } else {
+      priceHTML = `<p class="price">${book.price} LEKE</p>`;
+    }
+
     li.innerHTML = `
       <a href="index1.html?id=${book.id}" class="book-link" data-genre="${book.genre}">
         <img src="${book.image}" alt="${book.title}">
         <div class="shkrimet">
           <p class="titulli"><strong>${book.title}</strong></p>
           <p class="autori">${book.author}</p>
-          <p class="price">${book.price} LEKE</p>
+          ${priceHTML}
         </div>
       </a>
       <button class="add" data-id="${book.id}">
@@ -672,7 +742,6 @@ function filterBooksByAuthor(author) {
       </button>
     `;
     bookListEl.appendChild(li);
-    console.log('Shtuar libër në DOM:', book.title);
   });
 
   container.style.display = 'block';
@@ -680,8 +749,6 @@ function filterBooksByAuthor(author) {
   const resultCountSpan = document.getElementById('resultCount');
   if (resultCountSpan) {
     resultCountSpan.textContent = `${filteredBooks.length} Rezultate`;
-  } else {
-    console.warn('Span me id "resultCount" nuk u gjet!');
   }
 
   const newAddButtons = bookListEl.querySelectorAll('.add');
@@ -695,10 +762,11 @@ function filterBooksByAuthor(author) {
       if (foundIndex > -1) {
         basket[foundIndex].quantity += 1;
       } else {
+        const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
         basket.push({
           id: productFound.id,
           name: productFound.title,
-          price: productFound.price,
+          price: priceToUse,
           image: productFound.image,
           quantity: 1
         });
@@ -711,9 +779,6 @@ function filterBooksByAuthor(author) {
   });
 }
 
-/*-------------------------------------------
-    Basket Initialization & Core Functionality
--------------------------------------------*/
 function updateCartIcon() {
   const cartCountSpan = document.getElementById('cartCount');
   let totalQuantity = 0;
@@ -730,9 +795,6 @@ window.addEventListener('load', () => {
   renderBasket();
 });
 
-/*-------------------------------------------
-    Cart Display & Interaction
--------------------------------------------*/
 const cart = document.querySelector('.carTop');
 const cartButton = document.querySelector('.icon-cart button');
 const carTop = document.getElementById('carTop');
@@ -790,14 +852,10 @@ function renderBasket() {
     `;
     const minusBtn = itemDiv.querySelector('.minus');
     const plusBtn = itemDiv.querySelector('.plus');
-    const qtyValue = itemDiv.querySelector('.qtyValue');
-    const totalPriceDiv = itemDiv.querySelector('.totalPrice');
 
     minusBtn.addEventListener('click', () => {
       if (product.quantity > 1) {
         product.quantity -= 1;
-        qtyValue.textContent = product.quantity;
-        totalPriceDiv.textContent = (product.price * product.quantity) + ' LEK';
       } else {
         basket = basket.filter(p => p.id !== product.id);
       }
@@ -806,19 +864,14 @@ function renderBasket() {
     });
     plusBtn.addEventListener('click', () => {
       product.quantity += 1;
-      qtyValue.textContent = product.quantity;
-      totalPriceDiv.textContent = (product.price * product.quantity) + ' LEK';
       localStorage.setItem('basket', JSON.stringify(basket));
-      updateCartIcon();
+      renderBasket();
     });
     listCart.appendChild(itemDiv);
   });
   updateCartIcon();
 }
 
-/*-------------------------------------------
-    Hamburger Menu & Other Click Elements
--------------------------------------------*/
 const hamMenu = document.querySelector('.ham-menu');
 const ofscrean = document.querySelector('.of-screne-menu');
 const genreLinks = document.querySelectorAll('.genre-link');
@@ -857,9 +910,6 @@ genreLinks.forEach(link => {
   });
 });
 
-/*-------------------------------------------
-    Dropdown Navigation Functionality
--------------------------------------------*/
 const dropdowns = document.querySelectorAll('.dropdown');
 dropdowns.forEach(dropdown => {
   dropdown.addEventListener('click', function (event) {
@@ -880,20 +930,21 @@ dropdowns.forEach(dropdown => {
   });
 });
 
-document.addEventListener('click', function() {
+document.addEventListener('click', function () {
   dropdowns.forEach(dropdown => {
     dropdown.classList.remove('active');
     const dropdownContent = dropdown.querySelector('.dropdown-content');
     const icon = dropdown.querySelector('i');
-    dropdownContent.style.display = 'none';
-    icon.classList.remove('fa-chevron-up');
-    icon.classList.add('fa-chevron-down');
+    if (dropdownContent) {
+      dropdownContent.style.display = 'none';
+    }
+    if (icon) {
+      icon.classList.remove('fa-chevron-up');
+      icon.classList.add('fa-chevron-down');
+    }
   });
 });
 
-/*-------------------------------------------
-    Search Function
--------------------------------------------*/
 function searchFunction() {
   const inputValue = document.getElementById('search-input').value.trim();
   if (inputValue) {
@@ -903,9 +954,6 @@ function searchFunction() {
   }
 }
 
-/*-------------------------------------------
-    Filter Panel Functionality
--------------------------------------------*/
 const filterButton = document.querySelector('.filter');
 const filterPanel = document.getElementById('filterInfo');
 const closeFilterButton = document.querySelector('.close-filter');
@@ -958,16 +1006,24 @@ if (sortSelect) {
 
     switch (sortValue) {
       case 'priceAsc':
-        sortedBooks.sort((a, b) => a.price - b.price);
+        sortedBooks.sort((a, b) => {
+          const priceA = a.offerPrice > 0 ? a.offerPrice : a.price;
+          const priceB = b.offerPrice > 0 ? b.offerPrice : b.price;
+          return priceA - priceB;
+        });
         break;
       case 'priceDesc':
-        sortedBooks.sort((a, b) => b.price - a.price);
+        sortedBooks.sort((a, b) => {
+          const priceA = a.offerPrice > 0 ? a.offerPrice : a.price;
+          const priceB = b.offerPrice > 0 ? b.offerPrice : b.price;
+          return priceB - priceA;
+        });
         break;
       case 'titleAsc':
         sortedBooks.sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'year':
-        sortedBooks.sort((a, b) => (b.Page || 0) - (a.Page || 0));
+        sortedBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
         break;
     }
 
@@ -975,13 +1031,25 @@ if (sortSelect) {
     sortedBooks.forEach(book => {
       const li = document.createElement('li');
       li.id = `book-${book.id}`;
+
+      let priceHTML = '';
+      if (book.offerPrice && book.offerPrice > 0) {
+        priceHTML = `
+              <p class="price">
+                  <del>${book.price} LEKE</del> 
+                  <span class="offer-price">${book.offerPrice} LEKE</span>
+              </p>`;
+      } else {
+        priceHTML = `<p class="price">${book.price} LEKE</p>`;
+      }
+
       li.innerHTML = `
         <a href="index1.html?id=${book.id}" class="book-link" data-genre="${book.genre}">
           <img src="${book.image}" alt="${book.title}">
           <div class="shkrimet">
             <p class="titulli"><strong>${book.title}</strong></p>
             <p class="autori">${book.author}</p>
-            <p class="price">${book.price} LEKE</p>
+            ${priceHTML}
           </div>
         </a>
         <button class="add" data-id="${book.id}">
@@ -1002,10 +1070,11 @@ if (sortSelect) {
         if (foundIndex > -1) {
           basket[foundIndex].quantity += 1;
         } else {
+          const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
           basket.push({
             id: productFound.id,
             name: productFound.title,
-            price: productFound.price,
+            price: priceToUse,
             image: productFound.image,
             quantity: 1
           });
@@ -1015,6 +1084,406 @@ if (sortSelect) {
         if (carTop) carTop.classList.add('active');
         renderBasket();
       });
+    });
+  });
+}
+
+const createModal = () => {
+  const modal = document.createElement('div');
+  modal.id = 'passwordModal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close-modal">×</span>
+      <h2>Identifikohu si Menaxher</h2>
+      <form id="passwordForm">
+        <label for="managerPassword">Fjalëkalimi:</label>
+        <input type="password" id="managerPassword" name="managerPassword" required>
+        <button type="submit">Hyr</button>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+const style = document.createElement('style');
+style.textContent = `
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+  }
+  .close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close-modal:hover {
+    color: black;
+  }
+  #passwordForm label {
+    display: block;
+    margin: 10px 0;
+    font-size: 16px;
+  }
+  #passwordForm input {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  #passwordForm button {
+    background-color: #6B1A1A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #passwordForm button:hover {
+    background-color: #872819;
+  }
+`;
+document.head.appendChild(style);
+
+const userIcon = document.querySelector('.menu-right a:first-child');
+
+if (userIcon) {
+  createModal();
+  const passwordModal = document.getElementById('passwordModal');
+  const closeModal = document.querySelector('.close-modal');
+  const passwordForm = document.getElementById('passwordForm');
+
+  userIcon.addEventListener('click', (e) => {
+    e.preventDefault();
+    passwordModal.style.display = 'block';
+  });
+
+  if (closeModal) {
+    closeModal.addEventListener('click', () => {
+      passwordModal.style.display = 'none';
+    });
+  }
+
+  if (passwordForm) {
+      passwordForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const passwordInput = document.getElementById('managerPassword').value;
+
+          try {
+              const response = await fetch('/api/login', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ password: passwordInput }),
+              });
+
+              const result = await response.json();
+
+              if (response.ok && result.success) {
+                  window.location.href = 'manager.html';
+              } else {
+                  alert(result.message || 'Ndodhi një gabim.');
+              }
+          } catch (error) {
+              console.error('Gabim gjatë tentativës për login:', error);
+              alert('Nuk mund të lidhemi me serverin. Ju lutem provoni përsëri.');
+          }
+      });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target === passwordModal) {
+      passwordModal.style.display = 'none';
+    }
+  });
+}
+
+function displayNewBooks() {
+  const newBooksContainer = document.getElementById('new-books-list');
+  if (!newBooksContainer) {
+    console.error('Elementi me ID "new-books-list" nuk u gjet në HTML.');
+    return;
+  }
+
+  const newBooks = booksDataForGenre.filter(book => {
+    if (!book.genre) return false;
+    const genres = Array.isArray(book.genre) ? book.genre : [book.genre];
+    return genres.some(g => g.trim().toLowerCase() === 'new');
+  });
+
+  newBooks.forEach(book => {
+    const bookDiv = document.createElement('div');
+    bookDiv.className = 'all';
+
+    const genreForDataAttr = Array.isArray(book.genre) ? book.genre.join(',') : book.genre;
+    bookDiv.setAttribute('data-genre', genreForDataAttr || 'Unknown');
+    bookDiv.setAttribute('data-author', book.author);
+
+    let priceHTML = '';
+    if (book.offerPrice && book.offerPrice > 0) {
+      priceHTML = `
+            <p class="price">
+                <del>${book.price} LEKE</del> 
+                <span class="offer-price">${book.offerPrice} LEKE</span>
+            </p>`;
+    } else {
+      priceHTML = `<p class="price">${book.price} LEKE</p>`;
+    }
+
+    bookDiv.innerHTML = `
+            <a href="index1.html?id=${book.id}">
+                <img src="${book.image}" alt="${book.title}">
+                <div class="shkrimet">
+                    <p><strong>${book.title.toUpperCase()}</strong></p>
+                    <p>Nga ${book.author}</p>
+                    ${priceHTML}
+                    <button class="add" data-id="${book.id}"><i class="fa-light fa-cart-shopping"></i>Add to Basket</button>
+                </div>
+            </a>
+        `;
+    newBooksContainer.appendChild(bookDiv);
+  });
+  initslider();
+  const addButtons = document.querySelectorAll('#new-books-list .add');
+  addButtons.forEach(button => {
+    if (button.getAttribute('listener') !== 'true') {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const productId = parseInt(button.getAttribute('data-id'), 10);
+        const productFound = booksDataForGenre.find(p => p.id === productId);
+        if (!productFound) return;
+
+        const foundIndex = basket.findIndex(item => item.id === productFound.id);
+        if (foundIndex > -1) {
+          basket[foundIndex].quantity += 1;
+        } else {
+          const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
+          basket.push({
+            id: productFound.id,
+            name: productFound.title,
+            price: priceToUse,
+            image: productFound.image,
+            quantity: 1
+          });
+        }
+        localStorage.setItem('basket', JSON.stringify(basket));
+        const carTop = document.getElementById('carTop');
+        if (carTop) carTop.classList.add('active');
+        renderBasket();
+
+        button.textContent = 'U shtua!';
+        button.disabled = true;
+        setTimeout(() => {
+          button.innerHTML = '<i class="fa-light fa-cart-shopping"></i>Add to Basket';
+          button.disabled = false;
+        }, 1500);
+      });
+      button.setAttribute('listener', 'true');
+    }
+  });
+}
+
+document.querySelectorAll('.autor-dinamik-karta').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / 20;
+    const rotateY = (centerX - x) / 20;
+
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+  });
+
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+  });
+});
+
+function updateStaticTopSellers() {
+  const topSellersList = document.getElementById('top-sellers-list');
+
+  if (!topSellersList) {
+    console.error('Lista e "Top Sellers" me ID "top-sellers-list" nuk u gjet!');
+    return;
+  }
+
+  const bookItems = topSellersList.querySelectorAll('.all');
+
+  bookItems.forEach(item => {
+    const addButton = item.querySelector('.add');
+    if (!addButton) return;
+
+    const bookId = parseInt(addButton.dataset.id, 10);
+    const bookData = booksDataForGenre.find(book => book.id === bookId);
+
+    if (bookData) {
+      const priceElement = item.querySelector('.price');
+      if (!priceElement) return;
+
+      let priceHTML = '';
+      if (bookData.offerPrice && bookData.offerPrice > 0) {
+        priceHTML = `
+                    <del>${bookData.price} LEKE</del> 
+                    <span class="offer-price">${bookData.offerPrice} LEKE</span>
+                `;
+      } else {
+        priceHTML = `${bookData.price} LEKE`;
+      }
+      priceElement.innerHTML = priceHTML;
+    }
+  });
+}
+
+function filterBooksByOffer() {
+  let filteredBooks = booksDataForGenre.filter(book => book.offerPrice && book.offerPrice > 0);
+
+  const resultCountSpan = document.getElementById('resultCount');
+  if (resultCountSpan) {
+    resultCountSpan.textContent = `${filteredBooks.length} Rezultate`;
+  }
+
+  const container = document.getElementById('koherenc');
+  if (!container) {
+    console.error('Container me id "koherenc" nuk u gjet!');
+    return;
+  }
+  const bookListEl = container.querySelector('.book-list');
+  if (!bookListEl) {
+    console.error('Elementi .book-list nuk u gjet brenda container-it!');
+    return;
+  }
+
+  bookListEl.innerHTML = '';
+  filteredBooks.forEach(book => {
+    const li = document.createElement('li');
+    li.id = `book-${book.id}`;
+
+    let priceHTML = `
+        <p class="price">
+            <del>${book.price} LEKE</del> 
+            <span class="offer-price">${book.offerPrice} LEKE</span>
+        </p>`;
+
+    li.innerHTML = `
+      <a href="index1.html?id=${book.id}" class="book-link">
+        <img src="${book.image}" alt="${book.title}">
+        <div class="shkrimet">
+          <p class="titulli"><strong>${book.title}</strong></p>
+          <p class="autori">${book.author}</p>
+          ${priceHTML}
+        </div>
+      </a>
+      <button class="add" data-id="${book.id}">
+        <i class="fa-light fa-cart-shopping"></i> Add to Basket
+      </button>
+    `;
+    bookListEl.appendChild(li);
+  });
+
+  container.style.display = 'block';
+  container.scrollIntoView({ behavior: 'smooth' });
+
+  const newAddButtons = bookListEl.querySelectorAll('.add');
+  newAddButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const productId = parseInt(btn.getAttribute('data-id'), 10);
+      const productFound = booksDataForGenre.find(p => p.id === productId);
+      if (!productFound) return;
+      const foundIndex = basket.findIndex(item => item.id === productFound.id);
+      if (foundIndex > -1) {
+        basket[foundIndex].quantity += 1;
+      } else {
+        const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
+        basket.push({
+          id: productFound.id, name: productFound.title, price: priceToUse, image: productFound.image, quantity: 1
+        });
+      }
+      localStorage.setItem('basket', JSON.stringify(basket));
+      const carTop = document.getElementById('carTop');
+      if (carTop) carTop.classList.add('active');
+      renderBasket();
+    });
+  });
+
+  const authorsContainer = document.getElementById('authors-checkboxes');
+  const publishersContainer = document.getElementById('publishers-checkboxes');
+  if (authorsContainer) authorsContainer.innerHTML = '';
+  if (publishersContainer) publishersContainer.innerHTML = '';
+
+  const authors = [...new Set(filteredBooks.map(book => book.author))];
+  const publishers = [...new Set(filteredBooks.map(book => book.Botimi))];
+
+  function displayAuthors(authorsList) {}
+  function displayPublishers(publishersList) {}
+
+}
+
+function initInfoLinks() {
+  const infoLinks = document.querySelectorAll('.info-link');
+  const allInfoSections = document.querySelectorAll('.info-section');
+  const mainContentSections = [
+    document.querySelector('.hero-section-background'),
+    document.querySelector('.zhvillim'),
+    ...document.querySelectorAll('.container'),
+    document.querySelector('.rekomandimet'),
+    document.querySelector('.lib-femije-seksion-bg'),
+    document.querySelector('.autor-dinamik-mbajtesi'),
+    document.querySelector('.seksion-oferte'),
+    document.getElementById('koherenc')
+  ];
+
+  infoLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById('info-' + targetId);
+
+      mainContentSections.forEach(section => {
+        if (section) section.style.display = 'none';
+      });
+
+      allInfoSections.forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      if(targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      const hamMenu = document.querySelector('.ham-menu');
+      const ofScreneMenu = document.querySelector('.of-screne-menu');
+      if (hamMenu && ofScreneMenu) {
+        hamMenu.classList.remove('active');
+        ofScreneMenu.classList.remove('active');
+      }
     });
   });
 }

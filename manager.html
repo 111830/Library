@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menaxher - Shto & Edito Libra</title>
+    <link rel="stylesheet" href="Style/style.css">
+    <link rel="stylesheet" href="Style/style3.css">
+    <style>
+        .search-container {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .search-container h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+        .search-box input {
+            flex-grow: 1;
+        }
+        .search-box button {
+            width: 100px;
+        }
+        #suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 110px;
+            border: 1px solid #ddd;
+            background-color: white;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background-color: #f1f1f1;
+        }
+        .category-selects {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .category-selects > div {
+            flex: 1;
+        }
+        .category-selects select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        #otherGenreInput {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .oferte-kontejner {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            background-color: #fff8e1;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ffecb3;
+        }
+        .oferte-input-grup {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .oferte-input-grup input {
+            flex-grow: 1;
+        }
+        #removeOfferButton {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        #removeOfferButton:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="manager-container">
+    
+        <div class="search-container">
+            <h2>Kërko dhe Edito një Libër</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Shkruaj titullin e librit...">
+                <div id="suggestions-box"></div>
+                <button id="searchButton" type="button">Kërko</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <h1>Menaxho të Dhënat e Librit</h1>
+        <form id="addBookForm">
+            <input type="hidden" id="bookId" name="bookId">
+
+            <label for="title">Titulli:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="price">Çmimi (LEK):</label>
+            <input type="number" id="price" name="price" required>
+            
+            <div class="oferte-kontejner">
+                <label for="offerPrice">Çmimi i Ofertës (opsionale):</label>
+                <div class="oferte-input-grup">
+                    <input type="number" id="offerPrice" name="offerPrice" placeholder="Lëre bosh nëse nuk ka ofertë">
+                    <button type="button" id="removeOfferButton" style="display: none;">Hiq Ofertën</button>
+                </div>
+            </div>
+            <label for="image">Foto (ngarko nëse dëshiron ta ndryshosh):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+            
+            <div class="category-selects">
+                <div>
+                    <label for="mainCategory">Kategoria Kryesore:</label>
+                    <select id="mainCategory" name="mainCategory" required></select>
+                </div>
+                <div>
+                    <label for="subCategory">Nën-kategoria:</label>
+                    <select id="subCategory" name="subCategory" required></select>
+                </div>
+            </div>
+            <div>
+                <label for="otherGenreInput">Ose shto zhanër tjetër (opsionale, ndaj me presje):</label>
+                <input type="text" id="otherGenreInput" name="otherGenreInput" placeholder="p.sh. Distopian, Steampunk...">
+            </div>
+            <label for="author">Autori:</label>
+            <input type="text" id="author" name="author" required>
+
+            <label for="longDescription">Përshkrim i Gjatë:</label>
+            <textarea id="longDescription" name="longDescription" required></textarea>
+
+            <label for="Pershkrimi">Përshkrim i Shkurtër:</label>
+            <textarea id="Pershkrimi" name="Pershkrimi" required></textarea>
+
+            <label for="Botimi">Shtëpia Botuese:</label>
+            <input type="text" id="Botimi" name="Botimi" required>
+
+            <label for="Page">Numri i Faqeve:</label>
+            <input type="number" id="Page" name="Page" required>
+
+            <label for="year">Viti i Botimit:</label>
+            <input type="number" id="year" name="year" required>
+
+            <button type="submit">Shto Librin</button>
+        </form>
+    </div>
+
+    <script>
+        const categoriesData = [
+            { name: "Art, Arkitekturë dhe Dizajn", subcategories: ["Albania Artist", "Arkitekt edhe Artist", "Art Bashkëkohor", "Art dhe Arkitekturë Peizazhi", "Dizajn", "Dizajn Industrial", "Histori dhe Kritikë Arti"] },
+            { name: "Libra për Shqipërinë", subcategories: ["Fotografi & Peizazh", "Guida dhe Harta", "Histori", "Letërsi Shqipe"] },
+            { name: "Shkenca Shoqërore dhe Zhvillimi Individual", subcategories: ["Filozofi", "Kriminalistikë", "Media dhe Komunikim", "Self Help"] },
+            { name: "Klasikë", subcategories: ["Klasikë Botëror", "Klasikë Modern"] },
+            { name: "Romane", subcategories: ["Antologji dhe Histori të Shkurtra", "Fantazi dhe Fantashkencë", "Libra Policesk dhe Thriller", "Mite dhe Legjenda"] },
+            { name: "Fjalorë dhe Gjuhë e Huaj", subcategories: ["Fjalorë", "Gramatikë dhe Teknika Shkrimi", "Linguistikë", "Metoda Mësimi"] },
+            { name: "Fe dhe Spiritualizëm", subcategories: ["Ëndrrat dhe Interpretimi i Tyre", "Fe", "Meditim dhe Vizualizim", "Misticizëm, Magji dhe Rituale", "Parashikimi i Fatit"] },
+            { name: "Libra për Fëmijë dhe Adoleshentë", subcategories: ["Adoleshentë", "Hobi dhe Interesa të Ndryshme", "Letërsi Klasike për Fëmijë", "Lexuesit e Hershëm", "Libra për Bebe", "Për Klasat e Mesme"] },
+            { name: "Histori dhe Arkeologji", subcategories: ["Arkeologji", "Etnologji", "Histori e Lashtë", "Histori e Shqipërisë", "Histori e Shteteve të Bashkuara të Amerikës", "Histori Europiane", "Histori Ushtarake", "Historia e Përgjithshme Botërore"] },
+            { name: "Politikë dhe Marrëdhënie Ndërkombëta...", subcategories: ["Diplomaci dhe Marrëdhënie Ndërkombëta...", "Ekonomi dhe Politikë", "Marrëdhënie Publike", "Politika Botërore", "Politika Europiane", "Politika të Lindjes së Mesme"] },
+            { name: "Biznes, Ekonomi dhe Juridik", subcategories: ["Biznes", "Ekonomi", "Financë", "Juridik", "Kontabilitet", "Menaxhim dhe Marketing"] },
+            { name: "Poezi dhe Kritikë Letrare", subcategories: ["Ese", "Kritikë Letrare", "Poezi"] },
+            { name: "Shkencë dhe Teknologji", subcategories: ["Astronomi dhe Hapësirë", "Biologji, Kimi dhe Shkenca Ekzakte", "Ekologji dhe Shkenca Mjedisore", "Informatikë dhe Internet", "Matematikë dhe Fizikë"] },
+            { name: "Biografi dhe Kujtime", subcategories: ["Autobiografi", "Biografi", "Kujtime"] },
+            { name: "Other", subcategories: ["Udhëtime dhe Aventurë", "Gatim dhe Ushqim", "Hobi dhe Mjeshtëri", "Humor", "Krime të Vërteta", "Komike dhe Novela Grafike"] }
+        ];
+        const addBookForm = document.getElementById('addBookForm');
+        const submitButton = addBookForm.querySelector('button[type="submit"]');
+        const bookIdInput = document.getElementById('bookId');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        const mainCategorySelect = document.getElementById('mainCategory');
+        const subCategorySelect = document.getElementById('subCategory');
+        const otherGenreInput = document.getElementById('otherGenreInput');
+        const offerPriceInput = document.getElementById('offerPrice');
+        const removeOfferButton = document.getElementById('removeOfferButton');
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            mainCategorySelect.innerHTML = '<option value="">Zgjidhni një kategori...</option>';
+            categoriesData.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = cat.name;
+                mainCategorySelect.appendChild(option);
+            });
+            subCategorySelect.innerHTML = '<option value="">Zgjidhni fillimisht kategorinë kryesore</option>';
+            subCategorySelect.disabled = true;
+        });
+
+        mainCategorySelect.addEventListener('change', () => {
+            const selectedCategoryName = mainCategorySelect.value;
+            const selectedCategory = categoriesData.find(cat => cat.name === selectedCategoryName);
+
+            subCategorySelect.innerHTML = '<option value="">Zgjidhni një nën-kategori...</option>';
+            if (selectedCategory && selectedCategory.subcategories && selectedCategory.subcategories.length > 0) {
+                subCategorySelect.disabled = false;
+                selectedCategory.subcategories.forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = subcat;
+                    option.textContent = subcat;
+                    subCategorySelect.appendChild(option);
+                });
+            } else {
+                subCategorySelect.disabled = true;
+            }
+        });
+        function resetForm() {
+            addBookForm.reset();
+            bookIdInput.value = '';
+            submitButton.textContent = 'Shto Librin';
+            searchInput.value = '';
+            suggestionsBox.style.display = 'none';
+            subCategorySelect.innerHTML = '<option value="">Zgjidhni fillimisht kategorinë kryesore</option>';
+            subCategorySelect.disabled = true;
+            otherGenreInput.value = '';
+            offerPriceInput.value = '';
+            removeOfferButton.style.display = 'none';
+        }
+
+        function populateForm(book) {
+            resetForm();
+            document.getElementById('title').value = book.title;
+            document.getElementById('price').value = book.price;
+            document.getElementById('author').value = book.author;
+            document.getElementById('longDescription').value = book.longDescription;
+            document.getElementById('Pershkrimi').value = book.Pershkrimi;
+            document.getElementById('Botimi').value = book.Botimi;
+            document.getElementById('Page').value = book.Page;
+            document.getElementById('year').value = book.year;
+            bookIdInput.value = book.id;
+            submitButton.textContent = 'Përditëso Librin';
+
+            if (book.offerPrice && book.offerPrice > 0) {
+                offerPriceInput.value = book.offerPrice;
+                removeOfferButton.style.display = 'block';
+            } else {
+                offerPriceInput.value = '';
+                removeOfferButton.style.display = 'none';
+            }
+
+            if (Array.isArray(book.genre) && book.genre.length > 0) {
+                const mainCat = book.genre[0] || '';
+                const subCat = book.genre[1] || '';
+                
+                mainCategorySelect.value = mainCat;
+                mainCategorySelect.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    subCategorySelect.value = subCat;
+                }, 100); 
+
+                if(book.genre.length > 2){
+                    otherGenreInput.value = book.genre.slice(2).join(', ');
+                }
+            }
+        }
+
+        removeOfferButton.addEventListener('click', () => {
+            offerPriceInput.value = '';
+            removeOfferButton.style.display = 'none';
+            alert('Oferta u hoq. Kliko "Përditëso Librin" për të ruajtur ndryshimin.');
+        });
+        searchInput.addEventListener('input', async () => {
+            const query = searchInput.value;
+            if (query.length < 2) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/book/search?title=${query}`);
+                const books = await response.json();
+                suggestionsBox.innerHTML = '';
+                if (books.length > 0) {
+                    books.forEach(book => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.textContent = book.title;
+                        item.addEventListener('click', () => {
+                            populateForm(book);
+                            suggestionsBox.style.display = 'none';
+                            searchInput.value = book.title;
+                        });
+                        suggestionsBox.appendChild(item);
+                    });
+                    suggestionsBox.style.display = 'block';
+                } else {
+                    suggestionsBox.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Gabim gjatë kërkimit për sugjerime:", err);
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+           if (e.target !== searchInput) {
+               suggestionsBox.style.display = 'none';
+           }
+        });
+
+
+        addBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const bookId = bookIdInput.value;
+
+            formData.append('title', document.getElementById('title').value);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('author', document.getElementById('author').value);
+            formData.append('longDescription', document.getElementById('longDescription').value);
+            formData.append('Pershkrimi', document.getElementById('Pershkrimi').value);
+            formData.append('Botimi', document.getElementById('Botimi').value);
+            formData.append('Page', document.getElementById('Page').value);
+            formData.append('year', document.getElementById('year').value);
+            formData.append('offerPrice', offerPriceInput.value);
+
+            if (bookId) { formData.append('bookId', bookId); }
+            
+            const imageInput = document.getElementById('image');
+            if(imageInput.files[0]){
+                formData.append('image', imageInput.files[0]);
+            }
+
+            const mainCatValue = mainCategorySelect.value;
+            const subCatValue = subCategorySelect.value;
+            const otherGenres = otherGenreInput.value.trim();
+
+            if (!mainCatValue || !subCatValue) {
+                alert("Ju lutem zgjidhni kategorinë dhe nën-kategorinë kryesore.");
+                return;
+            }
+            
+            let finalGenres = [mainCatValue, subCatValue];
+
+            if(otherGenres) {
+                const extra = otherGenres.split(',').map(g => g.trim()).filter(g => g);
+                finalGenres = finalGenres.concat(extra);
+            }
+            
+            formData.append('genre', finalGenres.join(','));
+
+            let url = bookId ? `/api/book/${bookId}` : '/shto-liber';
+            let method = bookId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { method: method, body: formData });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Ndodhi një gabim');
+                }
+                const result = await response.json();
+                alert(bookId ? `Libri "${result.book.title}" u përditësua!` : `Libri "${result.title}" u shtua!`);
+                resetForm();
+            } catch (err) {
+                console.error('Gabim:', err);
+                alert(`Gabim: ${err.message}`);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+.manager-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f1f1f1;
+  border-radius: 10px;
+  font-family: 'Cinzel', serif;
+}
+
+.manager-container h1 {
+  text-align: center;
+  color: #08063b;
+}
+
+#addBookForm label {
+  display: block;
+  margin: 10px 0 5px;
+  font-size: 16px;
+}
+
+#addBookForm input,
+#addBookForm textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+#addBookForm textarea {
+  height: 100px;
+}
+
+#addBookForm button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: #6B1A1A;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#addBookForm button:hover {
+  background-color: #872819;
+}
