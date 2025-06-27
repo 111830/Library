@@ -9,7 +9,7 @@ const port = 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
-const MANAGER_PASSWORD = 'admin123';
+const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
 
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
