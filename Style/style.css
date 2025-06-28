@@ -2050,3 +2050,22 @@ p.price del {
 .about-section ol li {
   margin-bottom: 10px;
 }
+
+@media (max-width: 767px) {
+    .autor-dinamik-rrjeta{
+        margin-top: 35px;
+    }
+}
+
+@keyframes shfaqjeNgaPoshte {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
