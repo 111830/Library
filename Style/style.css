@@ -852,7 +852,7 @@ nav {
 
 @media (max-width: 768px) {
     #koherenc .book-list li {
-        width: calc(50% - 20px);
+        width: 35%;
         max-width: 170px;
     }
 

@@ -193,41 +193,62 @@ fetch('Backend/Librat.json')
       renderBasket();
     });
 
-    const addButtons = document.querySelectorAll('.add');
-    addButtons.forEach(button => {
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
+    document.body.addEventListener('click', function(event) {
+      const button = event.target.closest('.add');
+      if (!button) return;
 
-        const productId = parseInt(button.getAttribute('data-id'), 10);
-        const productFound = booksDataForGenre.find(p => p.id === productId);
-        if (!productFound) return;
+      event.preventDefault();
+      event.stopPropagation();
 
-        const foundIndex = basket.findIndex(item => item.id === productFound.id);
-        if (foundIndex > -1) {
+      const productId = parseInt(button.getAttribute('data-id'), 10);
+      const productFound = booksDataForGenre.find(p => p.id === productId);
+      if (!productFound) return;
+
+      let basketItemId, nameToUse, priceToUse;
+      
+      const selectedLangName = button.dataset.selectedLangName || 'Shqip';
+      const selectedPrice = button.dataset.selectedPrice;
+
+      if (selectedLangName !== 'Shqip' && selectedPrice) {
+          basketItemId = `${productFound.id}-${selectedLangName}`;
+          nameToUse = `${productFound.title} (${selectedLangName})`;
+          priceToUse = parseFloat(selectedPrice);
+      } else {
+          basketItemId = `${productFound.id}-Shqip`;
+          nameToUse = productFound.title;
+          priceToUse = (productFound.offerPrice && productFound.offerPrice > 0) ? productFound.offerPrice : productFound.price;
+      }
+
+      const foundIndex = basket.findIndex(item => item.id === basketItemId);
+      
+      if (foundIndex > -1) {
           basket[foundIndex].quantity += 1;
-        } else {
-          const priceToUse = productFound.offerPrice && productFound.offerPrice > 0 ? productFound.offerPrice : productFound.price;
+      } else {
           basket.push({
-            id: productFound.id,
-            name: productFound.title,
-            price: priceToUse,
-            image: productFound.image,
-            quantity: 1
+              id: basketItemId,
+              productId: productFound.id,
+              name: nameToUse,
+              price: priceToUse,
+              image: productFound.image,
+              quantity: 1
           });
-        }
-        localStorage.setItem('basket', JSON.stringify(basket));
-        const carTop = document.getElementById('carTop');
-        if (carTop) carTop.classList.add('active');
-        renderBasket();
+      }
 
-        button.textContent = 'U shtua!';
-        button.disabled = true;
-        setTimeout(() => {
+      localStorage.setItem('basket', JSON.stringify(basket));
+      
+      const carTop = document.getElementById('carTop');
+      if (carTop) {
+           carTop.classList.add('show');
+           carTop.classList.remove('hide');
+      }
+      renderBasket();
+
+      button.textContent = 'U shtua!';
+      button.disabled = true;
+      setTimeout(() => {
           button.innerHTML = '<i class="fa-light fa-cart-shopping"></i>Add to Basket';
           button.disabled = false;
-        }, 1500);
-      });
+      }, 1500);
     });
 
     const searchInput = document.getElementById('search-input');
@@ -828,48 +849,44 @@ if (closeCartBtn) {
 }
 
 function renderBasket() {
-  if (!listCart) return;
-  listCart.innerHTML = '';
-  if (basket.length === 0) {
-    listCart.innerHTML = '<p style="text-align:center;">Shporta është bosh.</p>';
-    updateCartIcon();
-    return;
-  }
-  basket.forEach(product => {
-    const itemDiv = document.createElement('div');
-    itemDiv.classList.add('item');
-    itemDiv.innerHTML = `
-      <div class="image">
-        <img src="${product.image}" alt="${product.name}" width="50">
-      </div>
-      <div class="name">${product.name}</div>
-      <div class="totalPrice">${product.price * product.quantity} LEK</div>
-      <div class="quantity">
-        <span class="minus" style="cursor:pointer"><</span>
-        <span class="qtyValue">${product.quantity}</span>
-        <span class="plus" style="cursor:pointer">></span>
-      </div>
-    `;
-    const minusBtn = itemDiv.querySelector('.minus');
-    const plusBtn = itemDiv.querySelector('.plus');
+    if (!listCart) return;
+    listCart.innerHTML = '';
+    if (basket.length === 0) {
+        listCart.innerHTML = '<p style="text-align:center;">Shporta është bosh.</p>';
+        updateCartIcon();
+        return;
+    }
+    basket.forEach(product => {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('item');
+        itemDiv.innerHTML = `
+            <div class="image"><img src="${product.image}" alt="${product.name}" width="50"></div>
+            <div class="name">${product.name}</div>
+            <div class="totalPrice">${product.price * product.quantity} LEK</div>
+            <div class="quantity">
+                <span class="minus" style="cursor:pointer" data-id="${product.id}"><</span>
+                <span class="qtyValue">${product.quantity}</span>
+                <span class="plus" style="cursor:pointer" data-id="${product.id}">></span>
+            </div>`;
+        listCart.appendChild(itemDiv);
+    });
 
-    minusBtn.addEventListener('click', () => {
-      if (product.quantity > 1) {
-        product.quantity -= 1;
-      } else {
-        basket = basket.filter(p => p.id !== product.id);
-      }
-      localStorage.setItem('basket', JSON.stringify(basket));
-      renderBasket();
-    });
-    plusBtn.addEventListener('click', () => {
-      product.quantity += 1;
-      localStorage.setItem('basket', JSON.stringify(basket));
-      renderBasket();
-    });
-    listCart.appendChild(itemDiv);
-  });
-  updateCartIcon();
+    listCart.querySelectorAll('.minus').forEach(btn => btn.addEventListener('click', (e) => changeQuantity(e.target.dataset.id, -1)));
+    listCart.querySelectorAll('.plus').forEach(btn => btn.addEventListener('click', (e) => changeQuantity(e.target.dataset.id, 1)));
+    
+    updateCartIcon();
+}
+
+function changeQuantity(basketItemId, amount) {
+    const productIndex = basket.findIndex(p => p.id === basketItemId);
+    if (productIndex > -1) {
+        basket[productIndex].quantity += amount;
+        if (basket[productIndex].quantity <= 0) {
+            basket.splice(productIndex, 1);
+        }
+        localStorage.setItem('basket', JSON.stringify(basket));
+        renderBasket();
+    }
 }
 
 const hamMenu = document.querySelector('.ham-menu');

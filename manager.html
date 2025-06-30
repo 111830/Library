@@ -98,6 +98,28 @@
         #removeOfferButton:hover {
             background-color: #c82333;
         }
+        /* Stilet e reja per gjuhet */
+        .language-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .language-options label {
+            display: inline-block;
+            margin-right: 20px;
+            font-weight: normal;
+        }
+        #languagePriceInputs {
+            margin-top: 1rem;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+        .lang-price-group {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -120,9 +142,6 @@
 
             <label for="title">Titulli:</label>
             <input type="text" id="title" name="title" required>
-
-            <label for="price">Çmimi (LEK):</label>
-            <input type="number" id="price" name="price" required>
             
             <div class="oferte-kontejner">
                 <label for="offerPrice">Çmimi i Ofertës (opsionale):</label>
@@ -166,6 +185,19 @@
             <label for="year">Viti i Botimit:</label>
             <input type="number" id="year" name="year" required>
 
+            <div class="language-container">
+                <h3>Gjuhët dhe Çmimet e Disponueshme</h3>
+                <p style="font-size: 0.9em; color: #666;">Zgjidhni të paktën një gjuhë. Çmimi kryesor i librit do të jetë çmimi i gjuhës së parë të zgjedhur.</p>
+                <div class="language-options">
+                    <label><input type="checkbox" name="language" value="Shqip" checked> Shqip</label>
+                    <label><input type="checkbox" name="language" value="Anglisht"> Anglisht</label>
+                    <label><input type="checkbox" name="language" value="Italisht"> Italisht</label>
+                    <label><input type="checkbox" name="language" value="Gjermanisht"> Gjermanisht</label>
+                </div>
+                <div id="languagePriceInputs">
+                    </div>
+            </div>
+
             <button type="submit">Shto Librin</button>
         </form>
     </div>
@@ -199,9 +231,47 @@
         const otherGenreInput = document.getElementById('otherGenreInput');
         const offerPriceInput = document.getElementById('offerPrice');
         const removeOfferButton = document.getElementById('removeOfferButton');
+        const languageCheckboxes = document.querySelectorAll('input[name="language"]');
+        const languagePriceInputsContainer = document.getElementById('languagePriceInputs');
 
+        // FUNKSIONET PER GJUHET
+        const handleLanguageChange = (e) => {
+            const lang = e.target.value;
+            const isChecked = e.target.checked;
+            
+            if (isChecked) {
+                const priceGroup = document.createElement('div');
+                priceGroup.className = 'lang-price-group';
+                priceGroup.id = `price-group-${lang}`;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `price-${lang}`;
+                label.textContent = `Çmimi për ${lang}:`;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = `price-${lang}`;
+                input.name = `price-${lang}`;
+                input.placeholder = `Çmimi në ${lang === 'Shqip' ? 'LEK' : 'valutën përkatëse'}`;
+                input.required = true;
+                
+                priceGroup.appendChild(label);
+                priceGroup.appendChild(input);
+                languagePriceInputsContainer.appendChild(priceGroup);
+            } else {
+                const priceGroup = document.getElementById(`price-group-${lang}`);
+                if (priceGroup) {
+                    languagePriceInputsContainer.removeChild(priceGroup);
+                }
+            }
+        };
+
+        languageCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', handleLanguageChange);
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Populo kategorite
             mainCategorySelect.innerHTML = '<option value="">Zgjidhni një kategori...</option>';
             categoriesData.forEach(cat => {
                 const option = document.createElement('option');
@@ -211,6 +281,12 @@
             });
             subCategorySelect.innerHTML = '<option value="">Zgjidhni fillimisht kategorinë kryesore</option>';
             subCategorySelect.disabled = true;
+
+            // Trigger manualisht per checkbox-in e Shqipes qe eshte checked by default
+            const shqipCheckbox = document.querySelector('input[value="Shqip"]');
+            if (shqipCheckbox.checked) {
+                shqipCheckbox.dispatchEvent(new Event('change'));
+            }
         });
 
         mainCategorySelect.addEventListener('change', () => {
@@ -230,6 +306,7 @@
                 subCategorySelect.disabled = true;
             }
         });
+
         function resetForm() {
             addBookForm.reset();
             bookIdInput.value = '';
@@ -241,12 +318,18 @@
             otherGenreInput.value = '';
             offerPriceInput.value = '';
             removeOfferButton.style.display = 'none';
+            // Pastrimi i fushave te gjuheve
+            languagePriceInputsContainer.innerHTML = ''; 
+            languageCheckboxes.forEach(cb => {
+                cb.checked = (cb.value === 'Shqip'); // Rilevendsos default state
+                cb.dispatchEvent(new Event('change'));
+            });
         }
 
         function populateForm(book) {
-            resetForm();
+            resetForm(); // Pastron formen plotesisht, perfshire gjuhet
+            
             document.getElementById('title').value = book.title;
-            document.getElementById('price').value = book.price;
             document.getElementById('author').value = book.author;
             document.getElementById('longDescription').value = book.longDescription;
             document.getElementById('Pershkrimi').value = book.Pershkrimi;
@@ -259,9 +342,6 @@
             if (book.offerPrice && book.offerPrice > 0) {
                 offerPriceInput.value = book.offerPrice;
                 removeOfferButton.style.display = 'block';
-            } else {
-                offerPriceInput.value = '';
-                removeOfferButton.style.display = 'none';
             }
 
             if (Array.isArray(book.genre) && book.genre.length > 0) {
@@ -279,6 +359,34 @@
                     otherGenreInput.value = book.genre.slice(2).join(', ');
                 }
             }
+            
+            // Fshij gjendjen default te gjuheve para se te populosh te rejat
+            languagePriceInputsContainer.innerHTML = '';
+            languageCheckboxes.forEach(cb => cb.checked = false);
+
+            // Populo gjuhet dhe cmimet nga libri
+            if(book.languages && Array.isArray(book.languages) && book.languages.length > 0){
+                book.languages.forEach(langData => {
+                    const checkbox = document.querySelector(`input[name="language"][value="${langData.language}"]`);
+                    if(checkbox){
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change')); 
+                        
+                        setTimeout(() => {
+                            const priceInput = document.getElementById(`price-${langData.language}`);
+                            if(priceInput) priceInput.value = langData.price;
+                        }, 50); // nje vonese e vogel per te lejuar krijimin e elementit
+                    }
+                });
+            } else {
+                 // Nese libri i vjeter nuk ka fushen 'languages', vendos default Shqip
+                const shqipCheckbox = document.querySelector('input[value="Shqip"]');
+                shqipCheckbox.checked = true;
+                shqipCheckbox.dispatchEvent(new Event('change'));
+                setTimeout(() => {
+                    document.getElementById('price-Shqip').value = book.price;
+                }, 50);
+            }
         }
 
         removeOfferButton.addEventListener('click', () => {
@@ -286,6 +394,7 @@
             removeOfferButton.style.display = 'none';
             alert('Oferta u hoq. Kliko "Përditëso Librin" për të ruajtur ndryshimin.');
         });
+
         searchInput.addEventListener('input', async () => {
             const query = searchInput.value;
             if (query.length < 2) {
@@ -326,12 +435,38 @@
 
         addBookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
+            // Mblidh te dhenat per gjuhet
+            const languagesData = [];
+            const checkedLanguages = document.querySelectorAll('input[name="language"]:checked');
+
+            if (checkedLanguages.length === 0) {
+                alert('Ju lutem zgjidhni të paktën një gjuhë për librin.');
+                return;
+            }
+
+            for (const checkbox of checkedLanguages) {
+                const lang = checkbox.value;
+                const priceInput = document.getElementById(`price-${lang}`);
+                if (priceInput && priceInput.value) {
+                    languagesData.push({
+                        language: lang,
+                        price: parseFloat(priceInput.value)
+                    });
+                } else {
+                    alert(`Ju lutem vendosni një çmim për gjuhën ${lang}.`);
+                    return; // Ndalo dergimin e formes
+                }
+            }
+
             const formData = new FormData();
             const bookId = bookIdInput.value;
+            
+            // Vendos çmimin kryesor bazuar tek gjuha e pare e zgjedhur
+            const mainPrice = languagesData.length > 0 ? languagesData[0].price : 0;
+            formData.append('price', mainPrice);
 
             formData.append('title', document.getElementById('title').value);
-            formData.append('price', document.getElementById('price').value);
             formData.append('author', document.getElementById('author').value);
             formData.append('longDescription', document.getElementById('longDescription').value);
             formData.append('Pershkrimi', document.getElementById('Pershkrimi').value);
@@ -339,6 +474,7 @@
             formData.append('Page', document.getElementById('Page').value);
             formData.append('year', document.getElementById('year').value);
             formData.append('offerPrice', offerPriceInput.value);
+            formData.append('languages', JSON.stringify(languagesData));
 
             if (bookId) { formData.append('bookId', bookId); }
             
@@ -364,7 +500,7 @@
             }
             
             formData.append('genre', finalGenres.join(','));
-
+            
             let url = bookId ? `/api/book/${bookId}` : '/shto-liber';
             let method = bookId ? 'PUT' : 'POST';
 

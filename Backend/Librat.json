@@ -14,7 +14,13 @@
     "Botimi": "Pema",
     "Page": "588",
     "year": 2020,
-    "offerPrice": null
+    "offerPrice": null,
+    "languages": [
+      {
+        "language": "Shqip",
+        "price": 2000
+      }
+    ]
   },
   {
     "id": 2,

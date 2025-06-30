@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sq">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,54 @@
     <link rel="stylesheet" href="Style/style2.css">
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.7.1/css/all.css" />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet" />
+    <style>
+        .language-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fcf8f0;
+        }
+
+        .language-section h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .language-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .lang-link {
+            font-family: 'Arial', sans-serif;
+            font-size: 1em;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: color 0.3s ease;
+        }
+
+        .lang-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .lang-link.active {
+            color: #1a1a1a;
+            font-weight: bold;
+            cursor: default;
+            text-decoration: none;
+        }
+    </style>
 </head>
+
 <body>
 
     <div class="menu">
@@ -29,7 +77,6 @@
                         <li><a href="#" class="genre-link">Histori dhe Kritikë Arti</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Libra për Shqipërinë</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -39,7 +86,6 @@
                         <li><a href="#" class="genre-link">Letërsi Shqipe</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Shkenca Shoqërore dhe Zhvillimi Individual</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -49,7 +95,6 @@
                         <li><a href="#" class="genre-link">Self Help</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Klasike</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -57,7 +102,6 @@
                         <li><a href="#" class="genre-link">Klasikë Modern</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Romane</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -67,7 +111,6 @@
                         <li><a href="#" class="genre-link">Mite dhe Legjenda</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Fjalorë dhe Gjuhë e Huaj</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -77,7 +120,6 @@
                         <li><a href="#" class="genre-link">Metoda Mësimi</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Fe dhe Spiritualizëm</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -88,7 +130,6 @@
                         <li><a href="#" class="genre-link">Parashikimi i Fatit</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Libra për Fëmijë dhe Adoleshentë</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -100,7 +141,6 @@
                         <li><a href="#" class="genre-link">Për Klasat e Mesme</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Histori dhe Arkeologji</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -114,7 +154,6 @@
                         <li><a href="#" class="genre-link">Historia e Përgjithshme Botërore</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Politikë dhe Marrëdhënie Ndërkombëta...</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -126,7 +165,6 @@
                         <li><a href="#" class="genre-link">Politika të Lindjes së Mesme</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Biznes, Ekonomi dhe Juridik</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -138,7 +176,6 @@
                         <li><a href="#" class="genre-link">Menaxhim dhe Marketing</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Poezi dhe Kritikë Letrare</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -147,7 +184,6 @@
                         <li><a href="#" class="genre-link">Poezi</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Shkencë dhe Teknologji</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -158,7 +194,6 @@
                         <li><a href="#" class="genre-link">Matematikë dhe Fizikë</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Biografi dhe Kujtime</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -167,7 +202,6 @@
                         <li><a href="#" class="genre-link">Kujtime</a></li>
                     </ul>
                 </li>
-
                 <li class="dropdown">
                     <a href="#">Other</a> <i class="fa-solid fa-chevron-down"></i>
                     <ul class="dropdown-content">
@@ -182,12 +216,14 @@
 
                 <li class="kategori"><strong>Info</strong></li>
                 <hr style="width: 99%; margin-left: -11px; margin-bottom: 30px;" />
-                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#rreth-nesh" class="info-link">Rreth Nesh</a></li>
-                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#kontakt" class="info-link">Kontakt</a></li>
-                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#kushtet" class="info-link">Kushtet e Përdorimit</a></li>
+                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#rreth-nesh"
+                        class="info-link">Rreth Nesh</a></li>
+                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#kontakt"
+                        class="info-link">Kontakt</a></li>
+                <li style="text-align: center; margin-right: 35px; font-family: 'Cinzel', serif;"><a href="#kushtet"
+                        class="info-link">Kushtet e Përdorimit</a></li>
             </ul>
         </div>
-
         <nav>
             <div class="ham-menu">
                 <span></span>
@@ -195,13 +231,11 @@
                 <span></span>
             </div>
         </nav>
-
         <div class="search-bar">
             <i class="fas fa-search"></i>
             <input type="text" placeholder="Search..." id="search-input" autocomplete="off" />
             <div id="search-results" class="search-results" style="display: none;"></div>
         </div>
-
         <div class="menu-right">
             <a><i class="fa-light fa-user"></i></a>
             <a><i class="fa-light fa-heart"></i></a>
@@ -211,7 +245,6 @@
             </div>
         </div>
     </div>
-
     <div class="carTop" id="carTop">
         <h1>Shopping Cart</h1>
         <div class="listCart" id="listCart"></div>
@@ -220,12 +253,13 @@
             <button class="checkOut">CHECK OUT</button>
         </div>
     </div>
-
     <div class="checkout" id="checkout">
         <h1>Checkout</h1>
         <div class="checkoutItems" id="checkoutItems"></div>
         <div class="checkoutInfo">
-            <p style="margin-top: 20px; text-align: center;">Për të përfunduar blerjen, ju lutemi plotësoni të dhënat tuaja më poshtë. Pas plotësimit të formularit, porosia juaj do të regjistrohet dhe do të kontaktoheni nga ekipi ynë për konfirmim dhe detaje të pagesës. Ju faleminderit për besimin!</p>
+            <p style="margin-top: 20px; text-align: center;">Për të përfunduar blerjen, ju lutemi plotësoni të dhënat
+                tuaja më poshtë. Pas plotësimit të formularit, porosia juaj do të regjistrohet dhe do të kontaktoheni
+                nga ekipi ynë për konfirmim dhe detaje të pagesës. Ju faleminderit për besimin!</p>
         </div>
         <div class="totalCost" id="totalCost">
             <p style="margin-top: 70px; text-align: center;">Totali (me postë): <span id="totalAmount">0 LEK</span></p>
@@ -254,7 +288,7 @@
             <button type="submit" class="submitOrder">SUBMIT ORDER</button>
         </div>
     </div>
-    
+
     <div class="book-details">
         <img id="book-image" src="" alt="">
         <div class="pjesa-tjeter">
@@ -267,8 +301,14 @@
                 <p id="book-author"></p>
                 <span class="rectangle-span"></span>
             </div>
-            <p id="book-price" class="price"></p> 
+            <p id="book-price" class="price"></p>
             <p id="book-long-description"></p>
+
+            <div id="language-section" class="language-section" style="display: none;">
+                <h3>Gjuhët:</h3>
+                <div id="language-links" class="language-links"></div>
+            </div>
+
             <button class="add" id="addToBasketButton"><i class="fa-light fa-cart-shopping"></i>Add to Basket</button>
         </div>
     </div>
@@ -291,113 +331,87 @@
     </div>
 
     <div class="info-section-container">
-    
-      <div id="info-rreth-nesh" class="info-section">
-        <h2>Mirësevini në Stacionin e Librarisë</h2>
-    
-        <img src="https://via.placeholder.com/800x400.png?text=Foto+e+Librarisë+Suaj" alt="Stacioni i Librarise" class="about-banner-image">
-    
-        <div class="about-section">
-          <h3>Misioni Ynë</h3>
-          <p>
-            Në "Stacioni i Librarisë", ne besojmë se çdo libër është një derë drejt një bote të re, një aventurë që pret
-            të zbulohet. Misioni ynë është të ndezim pasionin për leximin tek çdo moshë, duke ofruar një koleksion të
-            pasur dhe të larmishëm librash, nga klasikët botërorë e shqiptarë, te titujt më të rinj e më të kërkuar. Ne
-            jemi më shumë se një librari; jemi një pikë takimi për mendjet kurioze dhe shpirtrat endacakë.
-          </p>
+        <div id="info-rreth-nesh" class="info-section">
+            <h2>Mirësevini në Stacionin e Librarisë</h2>
+            <img src="https://via.placeholder.com/800x400.png?text=Foto+e+Librarisë+Suaj" alt="Stacioni i Librarise"
+                class="about-banner-image">
+            <div class="about-section">
+                <h3>Misioni Ynë</h3>
+                <p>Në "Stacioni i Librarisë", ne besojmë se çdo libër është një derë drejt një bote të re, një aventurë
+                    që pret të zbulohet. Misioni ynë është të ndezim pasionin për leximin tek çdo moshë, duke ofruar një
+                    koleksion të pasur dhe të larmishëm librash, nga klasikët botërorë e shqiptarë, te titujt më të rinj
+                    e më të kërkuar. Ne jemi më shumë se një librari; jemi një pikë takimi për mendjet kurioze dhe
+                    shpirtrat endacakë.</p>
+            </div>
+            <div class="about-section care-section">
+                <div class="icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                <div class="text">
+                    <h3>Si i Trajtojmë Librat Tuaj</h3>
+                    <p>Çdo libër që niset nga stacioni ynë trajtohet me dashurinë dhe kujdesin maksimal. Që nga momenti
+                        që mbërrijnë në magazinën tonë e deri në paketimin për dërgesë, ne sigurohemi që ato të ruhen në
+                        kushte optimale dhe të mbështillen me kujdes, në mënyrë që udhëtimi drejt jush të jetë i sigurt
+                        dhe libri të arrijë në duart tuaja në gjendje perfekte.</p>
+                </div>
+            </div>
+            <div class="about-section logo-section">
+                <img src="https://via.placeholder.com/150x150.png?text=Logoja+Juaj" alt="Logo Stacioni i Librarisë"
+                    class="about-logo">
+                <p>Faleminderit që zgjodhët të udhëtoni me ne në botën e pafundme të dijes dhe imagjinatës!</p>
+            </div>
         </div>
-    
-        <div class="about-section care-section">
-          <div class="icon">
-            <i class="fa-solid fa-hand-holding-heart"></i>
-          </div>
-          <div class="text">
-            <h3>Si i Trajtojmë Librat Tuaj</h3>
-            <p>
-              Çdo libër që niset nga stacioni ynë trajtohet me dashurinë dhe kujdesin maksimal. Që nga momenti që
-              mbërrijnë në magazinën tonë e deri në paketimin për dërgesë, ne sigurohemi që ato të ruhen në kushte
-              optimale dhe të mbështillen me kujdes, në mënyrë që udhëtimi drejt jush të jetë i sigurt dhe libri të arrijë
-              në duart tuaja në gjendje perfekte.
-            </p>
-          </div>
+        <div id="info-kontakt" class="info-section">
+            <h2>Na Kontaktoni</h2>
+            <p>Jeni të mirëpritur të na kontaktoni përmes formave të mëposhtme:</p>
+            <div class="contact-links">
+                <a href="https://www.instagram.com/stacioni_librarise?igsh=MWZpcHlrYjE3NXhzcw==" target="_blank"
+                    title="Instagram"><i class="fa-brands fa-instagram"></i><span>Instagram</span></a>
+                <a href="https://www.tiktok.com/@stacioni_librarise?_t=ZM-8tSDFO7VwpB&_r=1" target="_blank"
+                    title="TikTok"><i class="fa-brands fa-tiktok"></i><span>TikTok</span></a>
+                <a href="tel:+355680000000" title="Numri i Telefonit"><i class="fa-solid fa-phone"></i><span>+355 68 000
+                        0000</span></a>
+            </div>
         </div>
-    
-        <div class="about-section logo-section">
-          <img src="https://via.placeholder.com/150x150.png?text=Logoja+Juaj" alt="Logo Stacioni i Librarisë" class="about-logo">
-          <p>
-            Faleminderit që zgjodhët të udhëtoni me ne në botën e pafundme të dijes dhe imagjinatës!
-          </p>
+        <div id="info-kushtet" class="info-section">
+            <h2>Kushtet e Përdorimit</h2>
+            <p>Mirësevini në faqen tonë! Duke përdorur këtë faqe, ju pranoni kushtet e mëposhtme. Shpresojmë që këtu të
+                gjeni të gjithë librat që dëshironi dhe të keni një përvojë sa më të këndshme.</p>
+            <div class="notice-box">
+                <h4>Njoftim i Rëndësishëm: Mënyra e Pagesës</h4>
+                <p>Për momentin, faqja jonë nuk ofron mundësinë e blerjes direkte me kartë banke. Të gjitha porositë
+                    finalizohen përmes komunikimit në WhatsApp. Jemi duke punuar për të integruar sistemin e pagesave me
+                    kartë dhe ky shërbim do të jetë i disponueshëm së shpejti. Ju faleminderit për mirëkuptimin!</p>
+            </div>
+            <div class="about-section">
+                <h3>Procesi i Porosisë</h3>
+                <ol>
+                    <li>Zgjidhni librat që dëshironi dhe shtojini në shportë.</li>
+                    <li>Klikoni butonin "CHECK OUT" në shportën tuaj.</li>
+                    <li>Plotësoni të dhënat tuaja të sakta në formularin që do t'ju shfaqet.</li>
+                    <li>Klikoni "SUBMIT ORDER" për të na dërguar automatikisht porosinë tuaj në WhatsApp.</li>
+                    <li>Ekipi ynë do t'ju kontaktojë për konfirmimin dhe detajet e pagesës (cash při doruzenie).</li>
+                </ol>
+            </div>
+            <div class="about-section">
+                <h3>Transporti</h3>
+                <p>Ne ofrojmë transport në të gjithë Shqipërinë dhe Kosovën. Kostot e transportit do të shfaqen gjatë
+                    procesit të blerjes në varësi të vendndodhjes suaj.</p>
+            </div>
+            <div class="about-section">
+                <h3>Përmbajtja e Faqes</h3>
+                <p>E gjithë përmbajtja në këtë faqe, përfshirë imazhet, tekstet dhe dizajni, është pronë e "Stacioni i
+                    Librarisë". Përdorimi i tyre pa leje është i ndaluar.</p>
+            </div>
         </div>
-      </div>
-    
-      <div id="info-kontakt" class="info-section">
-        <h2>Na Kontaktoni</h2>
-        <p>Jeni të mirëpritur të na kontaktoni përmes formave të mëposhtme:</p>
-        <div class="contact-links">
-          <a href="https://www.instagram.com/stacioni_librarise?igsh=MWZpcHlrYjE3NXhzcw==" target="_blank" title="Instagram">
-            <i class="fa-brands fa-instagram"></i>
-            <span>Instagram</span>
-          </a>
-          <a href="https://www.tiktok.com/@stacioni_librarise?_t=ZM-8tSDFO7VwpB&_r=1" target="_blank" title="TikTok">
-            <i class="fa-brands fa-tiktok"></i>
-            <span>TikTok</span>
-          </a>
-          <a href="tel:+355680000000" title="Numri i Telefonit">
-            <i class="fa-solid fa-phone"></i>
-            <span>+355 68 000 0000</span> </a>
-        </div>
-      </div>
-    
-      <div id="info-kushtet" class="info-section">
-        <h2>Kushtet e Përdorimit</h2>
-        <p>
-          Mirësevini në faqen tonë! Duke përdorur këtë faqe, ju pranoni kushtet e mëposhtme. Shpresojmë që këtu të gjeni
-          të gjithë librat që dëshironi dhe të keni një përvojë sa më të këndshme.
-        </p>
-        <div class="notice-box">
-          <h4>Njoftim i Rëndësishëm: Mënyra e Pagesës</h4>
-          <p>
-            Për momentin, faqja jonë nuk ofron mundësinë e blerjes direkte me kartë banke. Të gjitha porositë finalizohen
-            përmes komunikimit në WhatsApp. Jemi duke punuar për të integruar sistemin e pagesave me kartë dhe ky shërbim
-            do të jetë i disponueshëm së shpejti. Ju faleminderit për mirëkuptimin!
-          </p>
-        </div>
-        <div class="about-section">
-          <h3>Procesi i Porosisë</h3>
-          <ol>
-            <li>Zgjidhni librat që dëshironi dhe shtojini në shportë.</li>
-            <li>Klikoni butonin "CHECK OUT" në shportën tuaj.</li>
-            <li>Plotësoni të dhënat tuaja të sakta në formularin që do t'ju shfaqet.</li>
-            <li>Klikoni "SUBMIT ORDER" për të na dërguar automatikisht porosinë tuaj në WhatsApp.</li>
-            <li>Ekipi ynë do t'ju kontaktojë për konfirmimin dhe detajet e pagesës (cash při doruzenie).</li>
-          </ol>
-        </div>
-        <div class="about-section">
-          <h3>Transporti</h3>
-          <p>
-            Ne ofrojmë transport në të gjithë Shqipërinë dhe Kosovën. Kostot e transportit do të shfaqen gjatë procesit të
-            blerjes në varësi të vendndodhjes suaj.
-          </p>
-        </div>
-        <div class="about-section">
-          <h3>Përmbajtja e Faqes</h3>
-          <p>
-            E gjithë përmbajtja në këtë faqe, përfshirë imazhet, tekstet dhe dizajni, është pronë e "Stacioni i
-            Librarisë". Përdorimi i tyre pa leje është i ndaluar.
-          </p>
-        </div>
-      </div>
-    
     </div>
-
     <footer class="footer-personalizuar-mbajtesi">
         <div class="footer-personalizuar-kontejner">
             <div class="footer-personalizuar-rrjeta">
                 <div>
-                    <h3 class="footer-personalizuar-font-titull footer-personalizuar-titull-kolone">Stacioni i Librarisë</h3>
-                    <p class="footer-personalizuar-pershkrim">
-                        Ne jemi më shumë se një librari, jemi një komunitet për të gjithë ata që e duan fjalën e shkruar. Misioni ynë është të sjellim historitë më të bukura pranë jush, duke ofruar një shërbim cilësor dhe një përvojë të paharrueshme.
-                    </p>
+                    <h3 class="footer-personalizuar-font-titull footer-personalizuar-titull-kolone">Stacioni i Librarisë
+                    </h3>
+                    <p class="footer-personalizuar-pershkrim">Ne jemi më shumë se një librari, jemi një komunitet për të
+                        gjithë ata që e duan fjalën e shkruar. Misioni ynë është të sjellim historitë më të bukura pranë
+                        jush, duke ofruar një shërbim cilësor dhe një përvojë të paharrueshme.</p>
                 </div>
                 <div>
                     <h3 class="footer-personalizuar-font-titull footer-personalizuar-titull-kolone">Lidhje</h3>
@@ -411,28 +425,32 @@
                 <div>
                     <h3 class="footer-personalizuar-font-titull footer-personalizuar-titull-kolone">Na Gjeni</h3>
                     <div class="footer-personalizuar-ikonat-sociale">
-                        <a href="#" aria-label="Facebook" title="Facebook">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" /></svg>
-                        </a>
-                        <a href="#" aria-label="Instagram" title="Instagram">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919 4.919 1.266-.057 1.645-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z" /></svg>
-                        </a>
-                        <a href="#" aria-label="TikTok" title="TikTok">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" /></svg>
-                        </a>
+                        <a href="#" aria-label="Facebook" title="Facebook"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+                            </svg></a>
+                        <a href="#" aria-label="Instagram" title="Instagram"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919 4.919 1.266-.057 1.645-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z" />
+                            </svg></a>
+                        <a href="#" aria-label="TikTok" title="TikTok"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+                            </svg></a>
                     </div>
                 </div>
             </div>
             <div class="footer-personalizuar-barra-poshte">
-                <p class="footer-personalizuar-copyright">
-                    &copy; 2024 Stacioni i Librarisë. Të gjitha të drejtat të rezervuara.
-                </p>
+                <p class="footer-personalizuar-copyright">&copy; 2024 Stacioni i Librarisë. Të gjitha të drejtat të
+                    rezervuara.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Merr id-në e produktit nga URL
         function getProductIdFromURL() {
             const params = new URLSearchParams(window.location.search);
             return parseInt(params.get('id'), 10);
@@ -440,46 +458,120 @@
 
         const bookId = getProductIdFromURL();
 
-        // Ngarko detajet e librit nga JSON
+        const languageMap = {
+            "Shqip": { name: "Shqip", currency: "LEK" },
+            "Anglisht": { name: "English", currency: "LEK" },
+            "Italisht": { name: "Italiano", currency: "LEK" },
+            "Gjermanisht": { name: "Deutsch", currency: "LEK" }
+        };
+
         fetch('Backend/Librat.json')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
             .then(data => {
                 const selectedBook = data.find(item => item.id === bookId);
                 if (selectedBook) {
-                    document.getElementById('book-title').textContent = selectedBook.title;
-                    document.getElementById('book-image').src = selectedBook.image;
-                    document.getElementById('book-image').alt = selectedBook.title;
-                    document.getElementById('book-author').textContent = selectedBook.author;
-                    document.getElementById('book-genre').textContent = selectedBook.genre.join(', '); // E bëjmë string
-                    document.getElementById('book-long-description').textContent = selectedBook.longDescription;
-                    document.getElementById('Pershkrimi').textContent = selectedBook.Pershkrimi;
-                    document.getElementById('Shtepia').textContent = selectedBook.Botimi;
-                    document.getElementById('faqet').textContent = selectedBook.Page;
-                    
-                    const priceElement = document.getElementById('book-price');
-
-                    if (selectedBook.offerPrice && selectedBook.offerPrice > 0) {
-                        priceElement.innerHTML = `
-                            <del>${selectedBook.price} LEKË</del>
-                            <span class="offer-price">${selectedBook.offerPrice} LEKË</span>
-                        `;
-                    } else {
-                        priceElement.textContent = selectedBook.price + ' LEKË';
-                    }
-
-                    const addToBasketButton = document.getElementById('addToBasketButton');
-                    addToBasketButton.setAttribute('data-id', selectedBook.id);
+                    displayBookDetails(selectedBook);
+                    setupLanguageLinks(selectedBook);
                 } else {
                     document.querySelector('.book-details').innerHTML = '<h1>Ky libër nuk u gjet!</h1>';
                 }
             })
             .catch(error => {
-                console.error('Gabim gjatë marrjes së të dhënave nga JSON:', error);
-                document.querySelector('.book-details').innerHTML = '<h1>Gabim gjatë ngarkimit të detajeve të produktit.</h1>';
+                console.error('Gabim gjatë marrjes së të dhënave:', error);
+                document.querySelector('.book-details').innerHTML = '<h1>Gabim në server. Ju lutem provoni përsëri.</h1>';
             });
-    </script>
-    
-    <script>
+
+        function displayBookDetails(book) {
+            document.getElementById('book-title').textContent = book.title;
+            document.getElementById('book-image').src = book.image;
+            document.getElementById('book-author').textContent = book.author;
+            document.getElementById('book-genre').textContent = Array.isArray(book.genre) ? book.genre.join(', ') : book.genre;
+            document.getElementById('book-long-description').textContent = book.longDescription;
+            document.getElementById('Pershkrimi').textContent = book.Pershkrimi;
+            document.getElementById('Shtepia').textContent = book.Botimi;
+            document.getElementById('faqet').textContent = book.Page;
+
+            updatePrice(book.price, book.offerPrice, languageMap['Shqip'].currency);
+
+            const addToBasketButton = document.getElementById('addToBasketButton');
+            addToBasketButton.setAttribute('data-id', book.id);
+
+            // --- Përgatit butonin e shportës me të dhënat fillestare (Shqip) ---
+            const initialPrice = (book.offerPrice && book.offerPrice > 0) ? book.offerPrice : book.price;
+            addToBasketButton.dataset.selectedPrice = initialPrice;
+            addToBasketButton.dataset.selectedLangName = languageMap['Shqip'].name;
+        }
+
+        function updatePrice(basePrice, offerPrice, currency) {
+            const priceElement = document.getElementById('book-price');
+            // Oferta shfaqet vetem per cmimin ne LEK (qe eshte monedha jone e vetme tani)
+            if (offerPrice && offerPrice > 0) {
+                priceElement.innerHTML = `<del>${basePrice} ${currency}</del> <span class="offer-price">${offerPrice} ${currency}</span>`;
+            } else {
+                priceElement.textContent = `${basePrice} ${currency}`;
+            }
+        }
+
+        function setupLanguageLinks(book) {
+            const langSection = document.getElementById('language-section');
+            const langLinksContainer = document.getElementById('language-links');
+
+            if (!book.languages || book.languages.length <= 1) {
+                langSection.style.display = 'none';
+                return;
+            }
+
+            langSection.style.display = 'block';
+            langLinksContainer.innerHTML = '';
+
+            book.languages.forEach((langInfo, index) => {
+                const langDetails = languageMap[langInfo.language];
+                if (!langDetails) return;
+
+                const link = document.createElement('a');
+                link.className = 'lang-link';
+                link.textContent = langDetails.name;
+                link.href = "#";
+
+                link.dataset.price = langInfo.price;
+                link.dataset.langName = langDetails.name; // Ruaj emrin e plote per shporten
+
+                if (index === 0) {
+                    link.classList.add('active');
+                }
+
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    document.querySelectorAll('.lang-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const newPrice = this.dataset.price;
+                    const newCurrency = languageMap[langInfo.language].currency; // Gjithmone LEK
+
+                    // Kontrollo nese eshte gjuha shqipe (e para ne liste) per te shfaqur oferten
+                    const isAlbanian = book.languages[0].language === langInfo.language;
+                    const offer = isAlbanian ? book.offerPrice : null;
+
+                    updatePrice(newPrice, offer, newCurrency);
+
+                    // --- Pjesa Kryesore: Përditëso butonin e shportës ---
+                    const addToBasketButton = document.getElementById('addToBasketButton');
+                    const priceForBasket = offer || newPrice; // Nese ka oferte, perdor oferten
+                    addToBasketButton.dataset.selectedPrice = priceForBasket;
+                    addToBasketButton.dataset.selectedLangName = this.dataset.langName;
+                });
+
+                langLinksContainer.appendChild(link);
+            });
+        }
+
+        // Keto funksione jane per pjesen tjeter te faqes, siç ishin
         document.addEventListener('DOMContentLoaded', function () {
             const infoLinks = document.querySelectorAll('.info-link');
             const mainContent = [
@@ -490,39 +582,28 @@
 
             infoLinks.forEach(link => {
                 link.addEventListener('click', function (event) {
-                    event.preventDefault(); // Ndalon sjelljen default te linkut
-
-                    // 1. Fshih permbajtjen kryesore (detajet e librit dhe tabelen)
-                    mainContent.forEach(el => {
-                        if (el) el.style.display = 'none';
-                    });
-
-                    // 2. Fshih te gjitha seksionet info
-                    infoSections.forEach(section => {
-                        section.style.display = 'none';
-                    });
-
-                    // 3. Shfaq seksionin e duhur
-                    const targetId = this.getAttribute('href').substring(1); // Merr id pa '#' p.sh. 'rreth-nesh'
+                    event.preventDefault();
+                    mainContent.forEach(el => { if (el) el.style.display = 'none'; });
+                    infoSections.forEach(section => { section.style.display = 'none'; });
+                    const targetId = this.getAttribute('href').substring(1);
                     const targetSection = document.getElementById('info-' + targetId);
-
                     if (targetSection) {
                         targetSection.style.display = 'block';
                         targetSection.scrollIntoView({ behavior: 'smooth' });
                     }
-                    
-                    // Mbyll menune anesore nese eshte hapur
                     const hamMenu = document.querySelector('.ham-menu');
                     const ofScreneMenu = document.querySelector('.of-screne-menu');
                     if (hamMenu && ofScreneMenu) {
-                      hamMenu.classList.remove('active');
-                      ofScreneMenu.classList.remove('active');
+                        hamMenu.classList.remove('active');
+                        ofScreneMenu.classList.remove('active');
                     }
                 });
             });
         });
     </script>
 
-    <script src="Backend/Javascript.js"></script> 
+    <script src="Backend/Javascript.js"></script>
+
 </body>
+
 </html>
