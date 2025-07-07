@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Robert Greene",
+    "nationality": "Shqiptar",
+    "description": "Një gjigant i letërsisë botërore, veprat e të cilit eksplorojnë thellësitë e historisë dhe shpirtit njerëzor.",
+    "image_url": "Image/1751907201908-577252953.jpg"
+  },
+  {
+    "id": 2,
+    "name": "George Orwell",
+    "nationality": "Britanik",
+    "description": "Një vizionar i letërsisë, i famshëm për kritikat e tij therëse ndaj totalitarizmit dhe padrejtësisë sociale.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/George_Orwell_press_photo.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Virginia Woolf",
+    "nationality": "Britanike",
+    "description": "Një pioniere e modernizmit, proza e saj lirike dhe inovative revolucionarizoi formën e romanit.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/George_Charles_Beresford_-_Virginia_Woolf_in_1902_-_Restoration.jpg/800px-George_Charles_Beresford_-_Virginia_Woolf_in_1902_-_Restoration.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Dritëro Agolli",
+    "nationality": "Shqiptar",
+    "description": "Poeti dhe shkrimtari i popullit, i dashur për thjeshtësinë, humorin dhe dashurinë për tokën e njeriun e zakonshëm.",
+    "image_url": "Image/91.jpg"
+  }
+]

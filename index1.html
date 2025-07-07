@@ -54,6 +54,39 @@
             cursor: default;
             text-decoration: none;
         }
+
+        .image-wrapper {
+            position: relative;
+            width: 300px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .sold-out-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            background-color: rgba(192, 57, 43, 0.9);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4em;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+            padding: 15px 10px;
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            border-radius: 5px;
+        }
     </style>
 </head>
 
@@ -290,7 +323,11 @@
     </div>
 
     <div class="book-details">
-        <img id="book-image" src="" alt="">
+        <div class="image-wrapper">
+            <img id="book-image" src="" alt="">
+            <div id="sold-out-banner" class="sold-out-banner" style="display: none;">NUK KA GJENDJE</div>
+        </div>
+
         <div class="pjesa-tjeter">
             <a href="">
                 <p id="book-genre"></p>
@@ -330,6 +367,21 @@
         </table>
     </div>
 
+    <div id="recommendations-container" style="display: none; margin-top: 50px;">
+        <p class="rekomandimet" style="text-align: center;">Mund t'ju pëlqejnë gjithashtu</p>
+        <div class="container">
+            <div class="slider-wrapper">
+                <button id="prev-slide" class="slide-button material-symbols-rounded">
+                    <i class="fa-regular fa-chevron-left"></i>
+                </button>
+                <div class="book-list" id="recommendations-list">
+                </div>
+                <button id="next-slide" class="slide-button material-symbols-rounded">
+                    <i class="fa-regular fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="info-section-container">
         <div id="info-rreth-nesh" class="info-section">
             <h2>Mirësevini në Stacionin e Librarisë</h2>
@@ -465,18 +517,23 @@
             "Gjermanisht": { name: "Deutsch", currency: "LEK" }
         };
 
-        fetch('Backend/Librat.json')
+        fetch(`/api/book/${bookId}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    throw new Error('Libri nuk u gjet ose ndodhi një gabim në server.');
                 }
                 return response.json();
             })
-            .then(data => {
-                const selectedBook = data.find(item => item.id === bookId);
-                if (selectedBook) {
-                    displayBookDetails(selectedBook);
-                    setupLanguageLinks(selectedBook);
+            .then(book => {
+                if (book) {
+                    displayBookDetails(book);
+                    setupLanguageLinks(book);
+                    if (typeof trackUserInterest === 'function') {
+                        trackUserInterest(book.author, book.genre);
+                    }
+                    if (typeof displayRecommendations === 'function') {
+                        displayRecommendations();
+                    }
                 } else {
                     document.querySelector('.book-details').innerHTML = '<h1>Ky libër nuk u gjet!</h1>';
                 }
@@ -492,24 +549,35 @@
             document.getElementById('book-author').textContent = book.author;
             document.getElementById('book-genre').textContent = Array.isArray(book.genre) ? book.genre.join(', ') : book.genre;
             document.getElementById('book-long-description').textContent = book.longDescription;
-            document.getElementById('Pershkrimi').textContent = book.Pershkrimi;
-            document.getElementById('Shtepia').textContent = book.Botimi;
-            document.getElementById('faqet').textContent = book.Page;
+            document.getElementById('Pershkrimi').textContent = book.pershkrimi;
+            document.getElementById('Shtepia').textContent = book.botimi;
+            document.getElementById('faqet').textContent = book.page;
 
             updatePrice(book.price, book.offerPrice, languageMap['Shqip'].currency);
 
             const addToBasketButton = document.getElementById('addToBasketButton');
             addToBasketButton.setAttribute('data-id', book.id);
 
-            // --- Përgatit butonin e shportës me të dhënat fillestare (Shqip) ---
-            const initialPrice = (book.offerPrice && book.offerPrice > 0) ? book.offerPrice : book.price;
-            addToBasketButton.dataset.selectedPrice = initialPrice;
-            addToBasketButton.dataset.selectedLangName = languageMap['Shqip'].name;
+            const soldOutBanner = document.getElementById('sold-out-banner');
+            if (book.quantity !== null && book.quantity <= 0) {
+                if (soldOutBanner) soldOutBanner.style.display = 'block';
+                addToBasketButton.disabled = true;
+                addToBasketButton.textContent = 'Nuk Ka Gjendje';
+                addToBasketButton.style.backgroundColor = '#999';
+                addToBasketButton.style.cursor = 'not-allowed';
+            } else {
+                addToBasketButton.disabled = false;
+                addToBasketButton.innerHTML = '<i class="fa-light fa-cart-shopping"></i>Add to Basket';
+                addToBasketButton.style.backgroundColor = '';
+                addToBasketButton.style.cursor = 'pointer';
+                const initialPrice = (book.offerPrice && book.offerPrice > 0) ? book.offerPrice : book.price;
+                addToBasketButton.dataset.selectedPrice = initialPrice;
+                addToBasketButton.dataset.selectedLangName = 'Shqip';
+            }
         }
 
         function updatePrice(basePrice, offerPrice, currency) {
             const priceElement = document.getElementById('book-price');
-            // Oferta shfaqet vetem per cmimin ne LEK (qe eshte monedha jone e vetme tani)
             if (offerPrice && offerPrice > 0) {
                 priceElement.innerHTML = `<del>${basePrice} ${currency}</del> <span class="offer-price">${offerPrice} ${currency}</span>`;
             } else {
@@ -520,8 +588,9 @@
         function setupLanguageLinks(book) {
             const langSection = document.getElementById('language-section');
             const langLinksContainer = document.getElementById('language-links');
+            const addToBasketButton = document.getElementById('addToBasketButton');
 
-            if (!book.languages || book.languages.length <= 1) {
+            if (!book.languages || book.languages.length <= 1 || addToBasketButton.disabled) {
                 langSection.style.display = 'none';
                 return;
             }
@@ -539,7 +608,7 @@
                 link.href = "#";
 
                 link.dataset.price = langInfo.price;
-                link.dataset.langName = langDetails.name; // Ruaj emrin e plote per shporten
+                link.dataset.langName = langInfo.language;
 
                 if (index === 0) {
                     link.classList.add('active');
@@ -552,17 +621,14 @@
                     this.classList.add('active');
 
                     const newPrice = this.dataset.price;
-                    const newCurrency = languageMap[langInfo.language].currency; // Gjithmone LEK
+                    const newCurrency = languageMap[langInfo.language].currency;
 
-                    // Kontrollo nese eshte gjuha shqipe (e para ne liste) per te shfaqur oferten
                     const isAlbanian = book.languages[0].language === langInfo.language;
                     const offer = isAlbanian ? book.offerPrice : null;
 
                     updatePrice(newPrice, offer, newCurrency);
 
-                    // --- Pjesa Kryesore: Përditëso butonin e shportës ---
-                    const addToBasketButton = document.getElementById('addToBasketButton');
-                    const priceForBasket = offer || newPrice; // Nese ka oferte, perdor oferten
+                    const priceForBasket = offer || newPrice;
                     addToBasketButton.dataset.selectedPrice = priceForBasket;
                     addToBasketButton.dataset.selectedLangName = this.dataset.langName;
                 });
@@ -571,7 +637,6 @@
             });
         }
 
-        // Keto funksione jane per pjesen tjeter te faqes, siç ishin
         document.addEventListener('DOMContentLoaded', function () {
             const infoLinks = document.querySelectorAll('.info-link');
             const mainContent = [
