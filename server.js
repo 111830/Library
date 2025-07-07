@@ -38,7 +38,7 @@ const handleServerError = (res, error, message) => {
 };
 
 app.post('/api/login', (req, res) => {
-    const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD || '1234';
+    const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
     if (!password) return res.status(400).json({ success: false, message: 'Ju lutem shkruani fjalëkalimin.' });
     if (password === MANAGER_PASSWORD) res.status(200).json({ success: true });
