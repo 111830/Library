@@ -9,10 +9,11 @@ const port = 3000;
 
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    user: 'postgres',
+    host: 'localhost',
+    database: 'libraria_db',
+    password: 'Renis1234$',
+    port: 5432,
 });
 
 app.use(express.static(path.join(__dirname)));
