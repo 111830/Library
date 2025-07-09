@@ -178,7 +178,7 @@ app.post('/api/order/checkout', async (req, res) => {
         basket.forEach(item => {
             const bookAuthor = item.author || 'Autor i panjohur';
             if (!authorsSummary[bookAuthor]) {
-                authorsSummary喧Summary[bookAuthor] = [];
+                authorsSummary[bookAuthor] = [];
             }
             authorsSummary[bookAuthor].push(`- ${item.name} (Sasia: ${item.quantity})`);
         });

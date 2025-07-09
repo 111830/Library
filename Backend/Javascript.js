@@ -1,3 +1,28 @@
+function resetUIState() {
+    // Mbyll menunë anësore
+    const hamMenu = document.querySelector('.ham-menu');
+    const ofScreneMenu = document.querySelector('.of-screne-menu');
+    if (hamMenu && ofScreneMenu) {
+        hamMenu.classList.remove('active');
+        ofScreneMenu.classList.remove('active');
+    }
+
+    // Mbyll të gjitha dropdown-et brenda menusë
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('active');
+        const dropdownContent = dropdown.querySelector('.dropdown-content');
+        const icon = dropdown.querySelector('i');
+        if (dropdownContent) {
+            dropdownContent.style.display = 'none';
+        }
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const btnFemije = document.querySelector('.lib-femije-buton-femijesh');
   if (btnFemije) {
@@ -226,30 +251,7 @@ fetch('/api/books')
     }
 
     window.addEventListener('popstate', function (event) {
-      const hamMenu = document.querySelector('.ham-menu');
-      const ofScreneMenu = document.querySelector('.of-screne-menu');
-      if (hamMenu) {
-        hamMenu.classList.remove('active');
-        hamMenu.setAttribute('aria-expanded', 'false');
-      }
-      if (ofScreneMenu) {
-        ofScreneMenu.classList.remove('active');
-        ofScreneMenu.style.left = window.innerWidth <= 768 ? '-100%' : '-450px';
-      }
-
-      const dropdowns = document.querySelectorAll('.dropdown');
-      dropdowns.forEach(dropdown => {
-        dropdown.classList.remove('active');
-        const dropdownContent = dropdown.querySelector('.dropdown-content');
-        const icon = dropdown.querySelector('i');
-        if (dropdownContent) {
-          dropdownContent.style.display = 'none';
-        }
-        if (icon) {
-          icon.classList.remove('fa-chevron-up');
-          icon.classList.add('fa-chevron-down');
-        }
-      });
+      resetUIState();
 
       const mainPageSections = [
         document.querySelector('.hero-section-background'),
@@ -772,6 +774,7 @@ window.addEventListener('pageshow', function (event) {
   basket = JSON.parse(localStorage.getItem('basket')) || [];
   updateCartIcon();
   renderBasket();
+  resetUIState();
 });
 
 window.addEventListener('load', () => {
