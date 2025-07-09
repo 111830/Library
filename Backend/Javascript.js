@@ -1,5 +1,4 @@
 function resetUIState() {
-    // Mbyll menunë anësore
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
     if (hamMenu && ofScreneMenu) {
@@ -7,7 +6,6 @@ function resetUIState() {
         ofScreneMenu.classList.remove('active');
     }
 
-    // Mbyll të gjitha dropdown-et brenda menusë
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
         dropdown.classList.remove('active');
@@ -34,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
 const initslider = () => {
   const sliders = document.querySelectorAll('.slider-wrapper');
 
@@ -771,9 +770,9 @@ function updateCartIcon() {
 }
 
 window.addEventListener('pageshow', function (event) {
-  basket = JSON.parse(localStorage.getItem('basket')) || [];
-  updateCartIcon();
-  renderBasket();
+    if (event.persisted) {
+        window.location.reload();
+    }
 });
 
 window.addEventListener('load', () => {
@@ -1537,19 +1536,19 @@ function displayRecommendations() {
 }
 
 function loadFeaturedAuthors() {
-  const container = document.getElementById('featured-authors-grid');
-  if (!container) return;
+    const container = document.getElementById('featured-authors-grid');
+    if (!container) return;
 
-  fetch('Backend/featured_authors.json')
-    .then(response => response.json())
-    .then(authors => {
-      container.innerHTML = '';
-      authors.forEach(author => {
-        const authorCard = document.createElement('div');
-        authorCard.className = 'autor-dinamik-karta';
-        const authorLink = `index.html?author=${encodeURIComponent(author.name)}`;
+    fetch('/api/featured-authors')
+        .then(response => response.json())
+        .then(authors => {
+            container.innerHTML = '';
+            authors.forEach(author => {
+                const authorCard = document.createElement('div');
+                authorCard.className = 'autor-dinamik-karta';
+                const authorLink = `index.html?author=${encodeURIComponent(author.name)}`;
 
-        authorCard.innerHTML = `
+                authorCard.innerHTML = `
                     <div class="autor-dinamik-foto-mbajtes">
                         <img src="${author.image_url}" alt="Foto e autorit ${author.name}">
                     </div>
@@ -1558,10 +1557,10 @@ function loadFeaturedAuthors() {
                     <p class="autor-dinamik-pershkrim">${author.description}</p>
                     <a href="${authorLink}" class="autor-dinamik-buton">Zbulo Veprat</a>
                 `;
-        container.appendChild(authorCard);
-      });
-    })
-    .catch(err => console.error('Gabim gjatë ngarkimit të autorëve:', err));
+                container.appendChild(authorCard);
+            });
+        })
+        .catch(err => console.error('Gabim gjatë ngarkimit të autorëve:', err));
 }
 
 document.addEventListener('DOMContentLoaded', loadFeaturedAuthors);
