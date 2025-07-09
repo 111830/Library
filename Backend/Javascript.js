@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnFemije) {
     btnFemije.addEventListener('click', function (e) {
       e.preventDefault();
+      sessionStorage.setItem('forceReload', 'true');
       const genre = 'Libra për Fëmijë dhe Adoleshentë';
       localStorage.setItem('lastGenre', genre.toLowerCase());
       window.location.href = `index.html?genre=${encodeURIComponent(genre.toLowerCase())}`;
@@ -162,6 +163,7 @@ fetch('/api/books')
     genreLinksDropdown.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
+        sessionStorage.setItem('forceReload', 'true');
         if (hamMenu && ofScreneMenu) {
             hamMenu.classList.remove('active');
             ofScreneMenu.classList.remove('active');
@@ -176,6 +178,7 @@ fetch('/api/books')
     dropdownTitles.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
+        sessionStorage.setItem('forceReload', 'true');
         if (hamMenu && ofScreneMenu) {
             hamMenu.classList.remove('active');
             ofScreneMenu.classList.remove('active');
@@ -264,16 +267,18 @@ fetch('/api/books')
             results.forEach(result => {
               const resultItem = document.createElement('div');
               resultItem.className = 'search-result-item';
+              resultItem.addEventListener('click', () => {
+                sessionStorage.setItem('forceReload', 'true');
+                if (result.type === 'book') {
+                    window.location.href = `index1.html?id=${result.id}`;
+                } else if (result.type === 'author') {
+                    window.location.href = `index.html?author=${encodeURIComponent(result.name)}`;
+                }
+              });
               if (result.type === 'book') {
                 resultItem.innerHTML = `<img src="${result.image}" alt="${result.name}"><span>${result.name}</span>`;
-                resultItem.addEventListener('click', () => {
-                  window.location.href = `index1.html?id=${result.id}`;
-                });
               } else if (result.type === 'author') {
                 resultItem.innerHTML = `<i class="fa-light fa-user" style="margin-right: 10px; color: #555;"></i><span>${result.name} (Autor)</span>`;
-                resultItem.addEventListener('click', () => {
-                  window.location.href = `index.html?author=${encodeURIComponent(result.name)}`;
-                });
               }
               searchResults.appendChild(resultItem);
             });
@@ -592,8 +597,9 @@ function updateCartIcon() {
   }
 }
 
-window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted && sessionStorage.getItem('forceReload') === 'true') {
+        sessionStorage.removeItem('forceReload');
         window.location.reload();
     }
 });
