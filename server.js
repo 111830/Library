@@ -3,11 +3,12 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -19,17 +20,7 @@ app.use(express.static(path.join(__dirname)));
 app.use('/Image', express.static(path.join(__dirname, 'Image')));
 app.use(express.json());
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = 'Image/';
-        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const handleServerError = (res, error, message) => {
@@ -83,29 +74,38 @@ app.get('/api/book/:id', async (req, res) => {
 app.post('/api/book', upload.single('image'), async (req, res) => {
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
     let imagePath = '';
-    if (req.file) {
-        imagePath = req.file.path.replace(/\\/g, "/");
-    } else if (imageUrl) {
-        imagePath = imageUrl;
-    } else {
-        return res.status(400).json({ message: 'Ju lutem ngarkoni një foto ose vendosni një link imazhi.' });
-    }
-    const languagesForDb = JSON.parse(languages || '[]');
-    const query = `
-        INSERT INTO books (title, price, image, genre, author, "longDescription", pershkrimi, botimi, page, year, "offerPrice", languages, quantity) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;`;
-    const values = [
-        title, parseFloat(price) || 0, imagePath, (genre || '').split(','), author, longDescription,
-        pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
-        parseFloat(offerPrice) || null,
-        JSON.stringify(languagesForDb),
-        parseInt(quantity, 10) || 0
-    ];
+
     try {
+        if (req.file) {
+            const fileExt = path.extname(req.file.originalname);
+            const fileName = `covers/${Date.now()}${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers')
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
+            imagePath = publicURLData.publicUrl;
+        } else if (imageUrl) {
+            imagePath = imageUrl;
+        } else {
+            return res.status(400).json({ message: 'Ju lutem ngarkoni një foto ose vendosni një link imazhi.' });
+        }
+
+        const languagesForDb = JSON.parse(languages || '[]');
+        const query = `
+            INSERT INTO books (title, price, image, genre, author, "longDescription", pershkrimi, botimi, page, year, "offerPrice", languages, quantity)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;`;
+        const values = [
+            title, parseFloat(price) || 0, imagePath, (genre || '').split(','), author, longDescription,
+            pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
+            parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0
+        ];
         const result = await pool.query(query, values);
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        if (req.file && fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
         handleServerError(res, err, 'Gabim gjatë shtimit të librit në databazë.');
     }
 });
@@ -113,18 +113,29 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
+    
     try {
-        const existingBookResult = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
-        if (existingBookResult.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-        const oldImagePath = existingBookResult.rows[0].image;
-        let imagePath = oldImagePath;
+        const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
+        if (existingRows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
+
+        let imagePath = existingRows[0].image;
+
         if (req.file) {
-            imagePath = req.file.path.replace(/\\/g, "/");
-            if (oldImagePath && !oldImagePath.startsWith('http') && fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+            const fileExt = path.extname(req.file.originalname);
+            const fileName = `covers/${Date.now()}${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers')
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
+            imagePath = publicURLData.publicUrl;
         } else if (imageUrl) {
             imagePath = imageUrl;
-            if (oldImagePath && imagePath !== oldImagePath && !oldImagePath.startsWith('http') && fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
         }
+
         const languagesForDb = JSON.parse(languages || '[]');
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
@@ -133,10 +144,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         const values = [
             title, parseFloat(price) || 0, imagePath, (genre || '').split(','), author, longDescription,
             pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
-            parseFloat(offerPrice) || null,
-            JSON.stringify(languagesForDb),
-            parseInt(quantity, 10) || 0,
-            bookId
+            parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0, bookId
         ];
         const result = await pool.query(query, values);
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
@@ -145,73 +153,95 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     }
 });
 
-const authorsFilePath = path.join(__dirname, 'Backend', 'featured_authors.json');
+app.get('/api/featured-authors', async (req, res) => {
+    try {
+        const { data, error } = await pool.query('SELECT * FROM featured_authors ORDER BY id');
+        if (error) throw error;
+        res.json(data.rows);
+    } catch (err) {
+        handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
+    }
+});
+
+app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) => {
+    const authorId = parseInt(req.params.id, 10);
+    const { name, nationality, description } = req.body;
+
+    try {
+        const { rows: existingRows } = await pool.query('SELECT image_url FROM featured_authors WHERE id = $1', [authorId]);
+        if (existingRows.length === 0) return res.status(404).json({ message: 'Autori nuk u gjet.' });
+        
+        let newImagePath = existingRows[0].image_url;
+
+        if (req.file) {
+            const fileName = `authors/${Date.now()}-${req.file.originalname}`;
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers')
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+
+            if (uploadError) throw uploadError;
+            
+            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
+            newImagePath = publicURLData.publicUrl;
+        }
+
+        const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
+        const values = [name, nationality, description, newImagePath, authorId];
+        const result = await pool.query(query, values);
+        res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
+    } catch (err) {
+        handleServerError(res, err, 'Gabim gjatë përditësimit të autorit.');
+    }
+});
 
 app.post('/api/order/checkout', async (req, res) => {
     const { basket, userInfo } = req.body;
-
-    if (!basket || !Array.isArray(basket) || basket.length === 0) {
-        return res.status(400).json({ message: "Shporta është bosh ose e pavlefshme." });
-    }
-    if (!userInfo) {
-        return res.status(400).json({ message: "Të dhënat e përdoruesit mungojnë." });
-    }
+    if (!basket || !Array.isArray(basket) || basket.length === 0) return res.status(400).json({ message: "Shporta është bosh ose e pavlefshme." });
+    if (!userInfo) return res.status(400).json({ message: "Të dhënat e përdoruesit mungojnë." });
 
     const client = await pool.connect();
-
     try {
         await client.query('BEGIN');
-
         const updatePromises = basket.map(item => {
             if (!item.productId || !item.quantity) throw new Error('Artikull i pavlefshëm në shportë.');
-            const query = 'UPDATE books SET quantity = quantity - $1 WHERE id = $2 AND quantity >= $1';
-            return client.query(query, [item.quantity, item.productId]);
+            return client.query('UPDATE books SET quantity = quantity - $1 WHERE id = $2 AND quantity >= $1', [item.quantity, item.productId]);
         });
         const results = await Promise.all(updatePromises);
         results.forEach((result, index) => {
             if (result.rowCount === 0) throw new Error(`Sasia nuk është e mjaftueshme për librin: ${basket[index].name}`);
         });
 
-        const yourPhoneNumber = '355683544145';
-        const yourApiKey = '3060802';
+        const yourPhoneNumber = process.env.WHATSAPP_PHONE_NUMBER;
+        const yourApiKey = process.env.WHATSAPP_API_KEY;
         const authorsSummary = {};
         basket.forEach(item => {
             const bookAuthor = item.author || 'Autor i panjohur';
-            if (!authorsSummary[bookAuthor]) {
-                authorsSummary[bookAuthor] = [];
-            }
+            if (!authorsSummary[bookAuthor]) authorsSummary[bookAuthor] = [];
             authorsSummary[bookAuthor].push(`- ${item.name} (Sasia: ${item.quantity})`);
         });
-
         let summaryText = '';
         for (const author in authorsSummary) {
             summaryText += `*${author}:*\n${authorsSummary[author].join('\n')}\n\n`;
         }
-
         const totalCost = basket.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const shippingCost = userInfo.state === 'Shqipëri' ? 200 : userInfo.state === 'Kosovë' ? 500 : 0;
         const finalTotal = totalCost + shippingCost;
-        
         const message = `*POROSI E RE NGA FAQJA!* 📢\n\n` +
                         `*Klienti:* ${userInfo.firstName} ${userInfo.lastName}\n` +
                         `*Tel:* ${userInfo.phone}\n` +
                         `*Adresa:* ${userInfo.address}, ${userInfo.city}, ${userInfo.state}\n` +
                         `-------------------------------------\n` +
-                        `*Artikujt e Porositur:*\n\n` +
-                        `${summaryText}` +
+                        `*Artikujt e Porositur:*\n\n${summaryText}` +
                         `-------------------------------------\n` +
                         `*Totali i librave:* ${totalCost} LEK\n` +
                         `*Posta:* ${shippingCost} LEK\n` +
                         `*TOTALI FINAL: ${finalTotal} LEK*`;
-        
         const encodedMessage = encodeURIComponent(message);
         const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${yourPhoneNumber}&text=${encodedMessage}&apikey=${yourApiKey}`;
-        
         fetch(apiUrl).catch(err => console.error("Gabim gjate dergimit te mesazhit ne WhatsApp (nuk ndikon porosine):", err));
         
         await client.query('COMMIT');
         res.status(200).json({ success: true, message: "Porosia u regjistrua dhe njoftimi u dërgua me sukses." });
-
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Gabim gjatë finalizimit të porosisë:', error);
@@ -221,67 +251,6 @@ app.post('/api/order/checkout', async (req, res) => {
     }
 });
 
-app.get('/api/featured-authors', (req, res) => {
-    fs.readFile(authorsFilePath, 'utf8', (err, data) => {
-        if (err) {
-            return handleServerError(res, err, 'Gabim gjatë leximit të skedarit të autorëve.');
-        }
-        res.json(JSON.parse(data));
-    });
+app.listen(port, () => {
+    console.log(`Serveri po funksionon në portin ${port}`);
 });
-
-app.put('/api/featured-authors/:id', upload.single('image'), (req, res) => {
-    const authorId = parseInt(req.params.id, 10);
-    const { name, nationality, description } = req.body;
-    fs.readFile(authorsFilePath, 'utf8', (err, data) => {
-        if (err) {
-            return handleServerError(res, err, 'Gabim gjatë leximit të skedarit për modifikim.');
-        }
-        let authors = JSON.parse(data);
-        const authorIndex = authors.findIndex(a => a.id === authorId);
-        if (authorIndex === -1) {
-            return res.status(404).json({ message: 'Autori nuk u gjet.' });
-        }
-        const oldImagePath = authors[authorIndex].image_url;
-        let newImagePath = oldImagePath;
-        if (req.file) {
-            newImagePath = req.file.path.replace(/\\/g, "/");
-            if (oldImagePath && !oldImagePath.startsWith('http') && fs.existsSync(oldImagePath)) {
-                fs.unlinkSync(oldImagePath);
-            }
-        }
-        authors[authorIndex] = {
-            ...authors[authorIndex],
-            name: name,
-            nationality: nationality,
-            description: description,
-            image_url: newImagePath
-        };
-        fs.writeFile(authorsFilePath, JSON.stringify(authors, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                return handleServerError(res, writeErr, 'Gabim gjatë ruajtjes së ndryshimeve.');
-            }
-            res.json({ message: 'Autori u përditësua me sukses!', author: authors[authorIndex] });
-        });
-    });
-});
-
-async function synchronizeDatabase() {
-    try {
-        console.log("Duke kontrolluar dhe sinkronizuar ID-të e databazës...");
-        const query = "SELECT setval('books_id_seq', COALESCE((SELECT MAX(id) FROM books), 1), true);";
-        await pool.query(query);
-        console.log("Sinkronizimi i ID-ve u krye me sukses.");
-    } catch (err) {
-        console.error("GABIM KRITIK gjatë sinkronizimit të databazës. Sigurohuni që sekuenca 'books_id_seq' ekziston.", err.message);
-    }
-}
-
-async function startServer() {
-    await synchronizeDatabase();
-    app.listen(port, () => {
-        console.log(`Serveri po funksionon në http://localhost:${port}`);
-    });
-}
-
-startServer();
