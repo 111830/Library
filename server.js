@@ -8,6 +8,11 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// SHTO KËTO DY RRESHTA FIX POSHTE KETIJ RRESHTI
+console.log('--- DEBUGGING VARIABLES ---');
+console.log('SUPABASE_URL e marrë nga Railway:', process.env.SUPABASE_URL);
+// FUNDI I KODIT TË SHTUAR
+
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
