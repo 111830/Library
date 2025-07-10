@@ -1,19 +1,14 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
-const fs = require('fs');
 const { Pool } = require('pg');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// SHTO KËTO DY RRESHTA FIX POSHTE KETIJ RRESHTI
-console.log('--- DEBUGGING VARIABLES ---');
-console.log('SUPABASE_URL e marrë nga Railway:', process.env.SUPABASE_URL);
-// FUNDI I KODIT TË SHTUAR
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -160,13 +155,13 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 
 app.get('/api/featured-authors', async (req, res) => {
     try {
-        const { data, error } = await pool.query('SELECT * FROM featured_authors ORDER BY id');
-        if (error) throw error;
-        res.json(data.rows);
+        const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
+        res.json(result.rows);
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
 });
+
 
 app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) => {
     const authorId = parseInt(req.params.id, 10);
@@ -181,7 +176,7 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         if (req.file) {
             const fileName = `authors/${Date.now()}-${req.file.originalname}`;
             const { error: uploadError } = await supabase.storage
-                .from('book-covers')
+                .from('book-covers') 
                 .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
 
             if (uploadError) throw uploadError;
