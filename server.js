@@ -9,15 +9,8 @@ const port = process.env.PORT || 3000;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-const { parse } = require('pg-connection-string');
-const dbConfig = parse(process.env.DATABASE_URL);
-
 const pool = new Pool({
-    user: dbConfig.user,
-    password: dbConfig.password,
-    host: dbConfig.host,
-    port: dbConfig.port,
-    database: dbConfig.database,
+    connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false
     },
@@ -169,6 +162,7 @@ app.get('/api/featured-authors', async (req, res) => {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
 });
+
 
 app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) => {
     const authorId = parseInt(req.params.id, 10);
