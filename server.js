@@ -14,7 +14,6 @@ const pool = new Pool({
     ssl: {
         rejectUnauthorized: false
     },
-    family: 4
 });
 
 app.use(express.static(path.join(__dirname)));
