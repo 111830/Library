@@ -4,15 +4,20 @@ const multer = require('multer');
 const { Pool } = require('pg');
 const { createClient } = require('@supabase/supabase-js');
 
-console.log("--- KODI I RI U NGARKUA ---");
-
 const app = express();
 const port = process.env.PORT || 3000;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
+const { parse } = require('pg-connection-string');
+const dbConfig = parse(process.env.DATABASE_URL);
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    user: dbConfig.user,
+    password: dbConfig.password,
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.database,
     ssl: {
         rejectUnauthorized: false
     },
@@ -164,7 +169,6 @@ app.get('/api/featured-authors', async (req, res) => {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
 });
-
 
 app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) => {
     const authorId = parseInt(req.params.id, 10);
