@@ -4,6 +4,8 @@ const multer = require('multer');
 const { Pool } = require('pg');
 const { createClient } = require('@supabase/supabase-js');
 
+console.log("--- KODI I RI U NGARKUA ---");
+
 const app = express();
 const port = process.env.PORT || 3000;
 
