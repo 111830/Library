@@ -35,7 +35,6 @@ const buildFullImageUrl = (imagePath) => {
     return imagePath;
 };
 
-// ... (endpoint-et e tjera si /api/login, /api/books, etj. mbeten siç ishin)
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
@@ -93,25 +92,21 @@ app.get('/api/book/:id', async (req, res) => {
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
-
-// NDRYSHIMI KRYESOR ËSHTË KËTU
 app.post('/api/book', upload.single('image'), async (req, res) => {
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
-    let imagePath = null; // Fillon si null
+    let imagePath = null; 
 
     try {
         if (req.file) {
             const fileExt = path.extname(req.file.originalname);
             const fileName = `${Date.now()}${fileExt}`;
 
-            // --- PJESA E ÇAKTIVIZUAR PËR TESTIM ---
-            // const { error: uploadError } = await supabase.storage
-            //     .from('book-covers')
-            //     .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-            // if (uploadError) throw uploadError;
-            // --- FUNDI I PJESËS SË ÇAKTIVIZUAR ---
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers')
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+
+            if (uploadError) throw uploadError;
             
-            console.log(`TESTIM: Ngarkimi në Supabase u anashkalua. Do të provohet të ruhet emri i skedarit: ${fileName}`);
             imagePath = fileName;
 
         } else if (imageUrl) {
@@ -134,7 +129,6 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
-// NDRYSHIMI KRYESOR ËSHTË EDHE KËTU
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
@@ -149,14 +143,12 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
             const fileExt = path.extname(req.file.originalname);
             const fileName = `${Date.now()}${fileExt}`;
 
-            // --- PJESA E ÇAKTIVIZUAR PËR TESTIM ---
-            // const { error: uploadError } = await supabase.storage
-            //     .from('book-covers')
-            //     .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-            // if (uploadError) throw uploadError;
-            // --- FUNDI I PJESËS SË ÇAKTIVIZUAR ---
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers')
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
 
-            console.log(`TESTIM: Ngarkimi në Supabase u anashkalua. Do të provohet të ruhet emri i skedarit: ${fileName}`);
+            if (uploadError) throw uploadError;
+
             imagePath = fileName;
 
         } else if (imageUrl) {
@@ -180,8 +172,6 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     }
 });
 
-
-//... Kodi tjetër mbetet siç ishte
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
@@ -207,6 +197,13 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
 
         if (req.file) {
             const fileName = `${Date.now()}-${req.file.originalname}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('book-covers') 
+                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+
+            if (uploadError) throw uploadError;
+
             newImagePath = fileName;
         }
 
@@ -273,7 +270,6 @@ app.post('/api/order/checkout', async (req, res) => {
         client.release();
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Serveri po funksionon në portin ${port}`);
