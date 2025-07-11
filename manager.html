@@ -546,10 +546,6 @@
             formData.append('year', document.getElementById('year').value);
             formData.append('quantity', document.getElementById('quantity').value);
             formData.append('offerPrice', offerPriceInput.value);
-            
-            if (!bookId && !imageInput.files[0] && !imageUrlInput.value) {
-                return alert('Për të shtuar një libër të ri, ju lutem ngarkoni një foto ose vendosni një link.');
-            }
             if (imageInput.files[0]) formData.append('image', imageInput.files[0]);
             formData.append('imageUrl', imageUrlInput.value);
 

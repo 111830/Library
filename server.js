@@ -7,8 +7,6 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log("--- APLIKACIONI PO PËRDOR KËTË DATABASE_URL:", process.env.DATABASE_URL);
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const pool = new Pool({
@@ -37,6 +35,7 @@ const buildFullImageUrl = (imagePath) => {
     return imagePath;
 };
 
+// ... (endpoint-et e tjera si /api/login, /api/books, etj. mbeten siç ishin)
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
@@ -94,27 +93,29 @@ app.get('/api/book/:id', async (req, res) => {
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
+
+// NDRYSHIMI KRYESOR ËSHTË KËTU
 app.post('/api/book', upload.single('image'), async (req, res) => {
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
-    let imagePath = '';
+    let imagePath = null; // Fillon si null
 
     try {
         if (req.file) {
             const fileExt = path.extname(req.file.originalname);
             const fileName = `${Date.now()}${fileExt}`;
 
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers')
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (uploadError) throw uploadError;
+            // --- PJESA E ÇAKTIVIZUAR PËR TESTIM ---
+            // const { error: uploadError } = await supabase.storage
+            //     .from('book-covers')
+            //     .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+            // if (uploadError) throw uploadError;
+            // --- FUNDI I PJESËS SË ÇAKTIVIZUAR ---
             
+            console.log(`TESTIM: Ngarkimi në Supabase u anashkalua. Do të provohet të ruhet emri i skedarit: ${fileName}`);
             imagePath = fileName;
 
         } else if (imageUrl) {
             imagePath = imageUrl;
-        } else {
-            return res.status(400).json({ message: 'Ju lutem ngarkoni një foto ose vendosni një link imazhi.' });
         }
 
         const languagesForDb = JSON.parse(languages || '[]');
@@ -133,6 +134,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
+// NDRYSHIMI KRYESOR ËSHTË EDHE KËTU
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
@@ -147,18 +149,20 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
             const fileExt = path.extname(req.file.originalname);
             const fileName = `${Date.now()}${fileExt}`;
 
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers')
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+            // --- PJESA E ÇAKTIVIZUAR PËR TESTIM ---
+            // const { error: uploadError } = await supabase.storage
+            //     .from('book-covers')
+            //     .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+            // if (uploadError) throw uploadError;
+            // --- FUNDI I PJESËS SË ÇAKTIVIZUAR ---
 
-            if (uploadError) throw uploadError;
-
+            console.log(`TESTIM: Ngarkimi në Supabase u anashkalua. Do të provohet të ruhet emri i skedarit: ${fileName}`);
             imagePath = fileName;
 
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
-
+        
         const languagesForDb = JSON.parse(languages || '[]');
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
@@ -176,6 +180,8 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     }
 });
 
+
+//... Kodi tjetër mbetet siç ishte
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
@@ -201,12 +207,6 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
 
         if (req.file) {
             const fileName = `${Date.now()}-${req.file.originalname}`;
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers') 
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (uploadError) throw uploadError;
-            
             newImagePath = fileName;
         }
 
@@ -244,16 +244,8 @@ app.post('/api/order/checkout', async (req, res) => {
 
         const yourPhoneNumber = process.env.WHATSAPP_PHONE_NUMBER;
         const yourApiKey = process.env.WHATSAPP_API_KEY;
-        const authorsSummary = {};
-        basket.forEach(item => {
-            const bookAuthor = item.author || 'Autor i panjohur';
-            if (!authorsSummary[bookAuthor]) authorsSummary[bookAuthor] = [];
-            authorsSummary[bookAuthor].push(`- ${item.name} (Sasia: ${item.quantity})`);
-        });
-        let summaryText = '';
-        for (const author in authorsSummary) {
-            summaryText += `*${author}:*\n${authorsSummary[author].join('\n')}\n\n`;
-        }
+        let summaryText = basket.map(item => `- ${item.name} (Sasia: ${item.quantity})`).join('\n');
+        
         const totalCost = basket.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const shippingCost = userInfo.state === 'Shqipëri' ? 200 : userInfo.state === 'Kosovë' ? 500 : 0;
         const finalTotal = totalCost + shippingCost;
@@ -262,7 +254,7 @@ app.post('/api/order/checkout', async (req, res) => {
                         `*Tel:* ${userInfo.phone}\n` +
                         `*Adresa:* ${userInfo.address}, ${userInfo.city}, ${userInfo.state}\n` +
                         `-------------------------------------\n` +
-                        `*Artikujt e Porositur:*\n\n${summaryText}` +
+                        `*Artikujt e Porositur:*\n${summaryText}\n` +
                         `-------------------------------------\n` +
                         `*Totali i librave:* ${totalCost} LEK\n` +
                         `*Posta:* ${shippingCost} LEK\n` +
@@ -281,6 +273,7 @@ app.post('/api/order/checkout', async (req, res) => {
         client.release();
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Serveri po funksionon në portin ${port}`);
