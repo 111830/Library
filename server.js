@@ -177,7 +177,11 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
-        res.json(result.rows);
+        const authorsWithFullUrls = result.rows.map(author => ({
+            ...author,
+            image_url: buildFullImageUrl(author.image_url)
+        }));
+        res.json(authorsWithFullUrls);
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
@@ -201,14 +205,19 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
 
             if (uploadError) throw uploadError;
             
-            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
-            newImagePath = publicURLData.publicUrl;
+            newImagePath = fileName;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
         const values = [name, nationality, description, newImagePath, authorId];
         const result = await pool.query(query, values);
-        res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
+        
+        const updatedAuthor = result.rows[0];
+        if (updatedAuthor) {
+            updatedAuthor.image_url = buildFullImageUrl(updatedAuthor.image_url);
+        }
+
+        res.json({ message: 'Autori u përditësua me sukses!', author: updatedAuthor });
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të autorit.');
     }
