@@ -17,7 +17,6 @@ const pool = new Pool({
 });
 
 app.use(express.static(path.join(__dirname)));
-app.use('/Image', express.static(path.join(__dirname, 'Image')));
 app.use(express.json());
 
 const storage = multer.memoryStorage();
@@ -26,6 +25,14 @@ const upload = multer({ storage: storage });
 const handleServerError = (res, error, message) => {
     console.error(message, error);
     return res.status(500).json({ message: message, error: error.message });
+};
+
+const buildFullImageUrl = (imagePath) => {
+    const baseUrl = 'https://rydbyprilwqximbhivgp.supabase.co/storage/v1/object/public/book-covers/';
+    if (imagePath && !imagePath.startsWith('http')) {
+        return baseUrl + imagePath;
+    }
+    return imagePath;
 };
 
 app.post('/api/login', (req, res) => {
@@ -39,22 +46,32 @@ app.post('/api/login', (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books ORDER BY id DESC');
-        res.json(result.rows);
+        const booksWithFullUrls = result.rows.map(book => ({
+            ...book,
+            image: buildFullImageUrl(book.image)
+        }));
+        res.json(booksWithFullUrls);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së listës së librave.'); }
 });
 
 app.get('/api/book/search', async (req, res) => {
     const query = req.query.title;
-    if (!query || query.length < 2) {
-        return res.json([]);
-    }
+    if (!query || query.length < 2) return res.json([]);
     try {
         const bookQuery = 'SELECT \'book\' as type, id, title as name, image FROM books WHERE title ILIKE $1 ORDER BY name ASC LIMIT 7';
         const authorQuery = 'SELECT \'author\' as type, NULL as id, author as name, NULL as image FROM books WHERE author ILIKE $1 GROUP BY author ORDER BY name ASC LIMIT 3';
-        const bookPromise = pool.query(bookQuery, [`%${query}%`]);
-        const authorPromise = pool.query(authorQuery, [`%${query}%`]);
-        const [bookResults, authorResults] = await Promise.all([bookPromise, authorPromise]);
-        const combinedResults = [...bookResults.rows, ...authorResults.rows];
+        
+        const [bookResults, authorResults] = await Promise.all([
+            pool.query(bookQuery, [`%${query}%`]),
+            pool.query(authorQuery, [`%${query}%`])
+        ]);
+
+        const booksWithFullUrls = bookResults.rows.map(book => ({
+            ...book,
+            image: buildFullImageUrl(book.image)
+        }));
+        
+        const combinedResults = [...booksWithFullUrls, ...authorResults.rows];
         res.json(combinedResults);
     } catch (err) {
         handleServerError(res, err, 'Gabim në server gjatë kërkimit.');
@@ -67,7 +84,11 @@ app.get('/api/book/:id', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-        res.json(result.rows[0]);
+
+        const book = result.rows[0];
+        book.image = buildFullImageUrl(book.image);
+        
+        res.json(book);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
@@ -85,9 +106,9 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
                 .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
 
             if (uploadError) throw uploadError;
+            
+            imagePath = fileName;
 
-            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
-            imagePath = publicURLData.publicUrl;
         } else if (imageUrl) {
             imagePath = imageUrl;
         } else {
@@ -130,8 +151,8 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 
             if (uploadError) throw uploadError;
 
-            const { data: publicURLData } = supabase.storage.from('book-covers').getPublicUrl(fileName);
-            imagePath = publicURLData.publicUrl;
+            imagePath = fileName;
+
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -161,7 +182,6 @@ app.get('/api/featured-authors', async (req, res) => {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
 });
-
 
 app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) => {
     const authorId = parseInt(req.params.id, 10);
