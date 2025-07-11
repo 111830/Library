@@ -99,7 +99,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     try {
         if (req.file) {
             const fileExt = path.extname(req.file.originalname);
-            const fileName = `covers/${Date.now()}${fileExt}`;
+            const fileName = `${Date.now()}${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('book-covers')
@@ -143,7 +143,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 
         if (req.file) {
             const fileExt = path.extname(req.file.originalname);
-            const fileName = `covers/${Date.now()}${fileExt}`;
+            const fileName = `${Date.now()}${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('book-covers')
@@ -194,7 +194,7 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         let newImagePath = existingRows[0].image_url;
 
         if (req.file) {
-            const fileName = `authors/${Date.now()}-${req.file.originalname}`;
+            const fileName = `${Date.now()}-${req.file.originalname}`;
             const { error: uploadError } = await supabase.storage
                 .from('book-covers') 
                 .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
