@@ -7,6 +7,8 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const port = process.env.PORT || 3000;
 
+console.log("--- APLIKACIONI PO PËRDOR KËTË DATABASE_URL:", process.env.DATABASE_URL);
+
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const pool = new Pool({
