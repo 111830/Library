@@ -17,7 +17,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY public.books DROP CONSTRAINT IF EXISTS books_pkey;
 DROP TABLE IF EXISTS public.books;
 SET default_tablespace = '';
 
@@ -171,7 +170,8 @@ SELECT pg_catalog.setval('public.books_id_seq', 92, true);
 
 ALTER TABLE ONLY public.books
     ADD CONSTRAINT books_pkey PRIMARY KEY (id);
-
+    
+ALTER TABLE books DISABLE ROW LEVEL SECURITY;
 
 --
 -- PostgreSQL database dump complete
