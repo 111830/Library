@@ -2,14 +2,8 @@ function resetUIState() {
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
     if (hamMenu && ofScreneMenu) {
-        ofScreneMenu.style.transition = 'none';
         hamMenu.classList.remove('active');
         ofScreneMenu.classList.remove('active');
-        setTimeout(function() {
-            if (ofScreneMenu) {
-                ofScreneMenu.style.transition = '';
-            }
-        }, 50);
     }
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
@@ -225,31 +219,30 @@ fetch('/api/books')
       filterBooksByOffer();
     }
 
-    window.addEventListener('popstate', function (event) {
-      resetUIState();
-      const mainPageSections = [
-        document.querySelector('.hero-section-background'),
-        document.querySelector('.zhvillim'),
-        ...document.querySelectorAll('.container'),
-        document.querySelector('.rekomandimet'),
-        document.querySelector('.lib-femije-seksion-bg'),
-        document.querySelector('.autor-dinamik-mbajtesi'),
-        document.querySelector('.seksion-oferte')
-      ];
-      const filterContainer = document.getElementById('koherenc');
-      if (window.location.search === '') {
-        mainPageSections.forEach(section => {
-          if (section) section.style.display = '';
-        });
-        if (filterContainer) filterContainer.style.display = 'none';
-      } else {
-        mainPageSections.forEach(section => {
-          if (section) section.style.display = 'none';
-        });
-        if (filterContainer) filterContainer.style.display = 'block';
-      }
-      renderBasket();
+window.addEventListener('popstate', function (event) {
+  const mainPageSections = [
+    document.querySelector('.hero-section-background'),
+    document.querySelector('.zhvillim'),
+    ...document.querySelectorAll('.container'),
+    document.querySelector('.rekomandimet'),
+    document.querySelector('.lib-femije-seksion-bg'),
+    document.querySelector('.autor-dinamik-mbajtesi'),
+    document.querySelector('.seksion-oferte')
+  ];
+  const filterContainer = document.getElementById('koherenc');
+  if (window.location.search === '') {
+    mainPageSections.forEach(section => {
+      if (section) section.style.display = '';
     });
+    if (filterContainer) filterContainer.style.display = 'none';
+  } else {
+    mainPageSections.forEach(section => {
+      if (section) section.style.display = 'none';
+    });
+    if (filterContainer) filterContainer.style.display = 'block';
+  }
+  renderBasket();
+});
 
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
