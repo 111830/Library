@@ -33,14 +33,6 @@ const handleServerError = (res, error, message) => {
     return res.status(500).json({ message: message, error: error.message });
 };
 
-const buildFullImageUrl = (imagePath) => {
-    const baseUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`;
-    if (imagePath && !imagePath.startsWith('http')) {
-        return baseUrl + imagePath;
-    }
-    return imagePath;
-};
-
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -65,11 +57,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books ORDER BY id DESC');
-        const booksWithFullUrls = result.rows.map(book => ({
-            ...book,
-            image: buildFullImageUrl(book.image)
-        }));
-        res.json(booksWithFullUrls);
+        res.json(result.rows);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së listës së librave.'); }
 });
 
@@ -84,13 +72,8 @@ app.get('/api/book/search', async (req, res) => {
             pool.query(bookQuery, [`%${query}%`]),
             pool.query(authorQuery, [`%${query}%`])
         ]);
-
-        const booksWithFullUrls = bookResults.rows.map(book => ({
-            ...book,
-            image: buildFullImageUrl(book.image)
-        }));
         
-        const combinedResults = [...booksWithFullUrls, ...authorResults.rows];
+        const combinedResults = [...bookResults.rows, ...authorResults.rows];
         res.json(combinedResults);
     } catch (err) {
         handleServerError(res, err, 'Gabim në server gjatë kërkimit.');
@@ -103,11 +86,7 @@ app.get('/api/book/:id', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-
-        const book = result.rows[0];
-        book.image = buildFullImageUrl(book.image);
-        
-        res.json(book);
+        res.json(result.rows[0]);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
@@ -118,7 +97,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     try {
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            imagePath = uploadResult.secure_url; 
+            imagePath = uploadResult.secure_url;
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -176,11 +155,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
-        const authorsWithFullUrls = result.rows.map(author => ({
-            ...author,
-            image_url: buildFullImageUrl(author.image_url)
-        }));
-        res.json(authorsWithFullUrls);
+        res.json(result.rows);
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
