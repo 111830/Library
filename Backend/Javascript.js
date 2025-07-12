@@ -1,14 +1,14 @@
 function resetUIState() {
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
-    
     if (hamMenu && ofScreneMenu) {
-        ofScreneMenu.classList.add('no-transition');
+        ofScreneMenu.style.transition = 'none';
         hamMenu.classList.remove('active');
         ofScreneMenu.classList.remove('active');
-        void ofScreneMenu.offsetWidth;
-        setTimeout(() => {
-            ofScreneMenu.classList.remove('no-transition');
+        setTimeout(function() {
+            if (ofScreneMenu) {
+                ofScreneMenu.style.transition = '';
+            }
         }, 50);
     }
     const dropdowns = document.querySelectorAll('.dropdown');
