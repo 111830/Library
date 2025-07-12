@@ -1,24 +1,4 @@
-function resetUIState() {
-    const hamMenu = document.querySelector('.ham-menu');
-    const ofScreneMenu = document.querySelector('.of-screne-menu');
-    if (hamMenu && ofScreneMenu) {
-        hamMenu.classList.remove('active');
-        ofScreneMenu.classList.remove('active');
-    }
-    const dropdowns = document.querySelectorAll('.dropdown');
-    dropdowns.forEach(dropdown => {
-        dropdown.classList.remove('active');
-        const dropdownContent = dropdown.querySelector('.dropdown-content');
-        const icon = dropdown.querySelector('i');
-        if (dropdownContent) {
-            dropdownContent.style.display = 'none';
-        }
-        if (icon) {
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
-    });
-}
+
 
 document.addEventListener('DOMContentLoaded', function () {
   const btnFemije = document.querySelector('.lib-femije-buton-femijesh');
@@ -163,11 +143,11 @@ fetch('/api/books')
     genreLinksDropdown.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-        sessionStorage.setItem('forceReload', 'true');
-        if (hamMenu && ofScreneMenu) {
+        if (hamMenu && ofscrean) {
             hamMenu.classList.remove('active');
-            ofScreneMenu.classList.remove('active');
+            ofscrean.classList.remove('active');
         }
+        sessionStorage.setItem('forceReload', 'true');
         const selectedGenre = this.textContent.trim().toLowerCase();
         localStorage.setItem('lastGenre', selectedGenre);
         window.location.href = `index.html?genre=${encodeURIComponent(selectedGenre)}`;
@@ -178,11 +158,11 @@ fetch('/api/books')
     dropdownTitles.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-        sessionStorage.setItem('forceReload', 'true');
-        if (hamMenu && ofScreneMenu) {
+        if (hamMenu && ofscrean) {
             hamMenu.classList.remove('active');
-            ofScreneMenu.classList.remove('active');
+            ofscrean.classList.remove('active');
         }
+        sessionStorage.setItem('forceReload', 'true');
         const category = this.textContent.trim().toLowerCase();
         window.location.href = `index.html?genre=${encodeURIComponent(category)}`;
       });
