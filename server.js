@@ -35,15 +35,7 @@ const handleServerError = (res, error, message) => {
     return res.status(500).json({ message: message, error: error.message });
 };
 
-// NDRYSHIMI: Ky funksion ndërton URL-në e plotë të Cloudinary për imazhet
-const buildFullImageUrl = (imagePath) => {
-    // Kujdes: Zëvendëso "dhnigsfrp" me cloud_name tëndin nëse është ndryshe
-    const baseUrl = `https://res.cloudinary.com/dhnigsfrp/image/upload/`;
-    if (imagePath && !imagePath.startsWith('http')) {
-        return baseUrl + imagePath;
-    }
-    return imagePath;
-};
+// buildFullImageUrl është hequr, nuk nevojitet më
 
 // Helper function to upload a file buffer to Cloudinary
 const uploadToCloudinary = (fileBuffer) => {
@@ -72,14 +64,11 @@ app.post('/api/login', (req, res) => {
     else res.status(401).json({ success: false, message: 'Fjalëkalimi i pasaktë!' });
 });
 
+// Endpoint i thjeshtuar, nuk modifikon më URL-në e imazhit
 app.get('/api/books', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books ORDER BY id DESC');
-        const booksWithFullUrls = result.rows.map(book => ({
-            ...book,
-            image: buildFullImageUrl(book.image)
-        }));
-        res.json(booksWithFullUrls);
+        res.json(result.rows);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së listës së librave.'); }
 });
 
@@ -107,17 +96,14 @@ app.get('/api/book/search', async (req, res) => {
     }
 });
 
+// Endpoint i thjeshtuar, nuk modifikon më URL-në e imazhit
 app.get('/api/book/:id', async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     if (isNaN(bookId)) return res.status(400).json({ message: 'ID e librit nuk është e vlefshme.' });
     try {
         const result = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-
-        const book = result.rows[0];
-        book.image = buildFullImageUrl(book.image);
-        
-        res.json(book);
+        res.json(result.rows[0]);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
