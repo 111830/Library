@@ -8,7 +8,6 @@ const streamifier = require('streamifier');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configure Cloudinary using environment variables
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -16,7 +15,6 @@ cloudinary.config({
     secure: true
 });
 
-// Configure the database connection pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -35,26 +33,26 @@ const handleServerError = (res, error, message) => {
     return res.status(500).json({ message: message, error: error.message });
 };
 
-// buildFullImageUrl është hequr, nuk nevojitet më
+const buildFullImageUrl = (imagePath) => {
+    const baseUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`;
+    if (imagePath && !imagePath.startsWith('http')) {
+        return baseUrl + imagePath;
+    }
+    return imagePath;
+};
 
-// Helper function to upload a file buffer to Cloudinary
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: "book-covers" }, // Optional: organizes uploads into a folder in Cloudinary
+            { folder: "book-covers" },
             (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
+                if (error) reject(error);
+                else resolve(result);
             }
         );
         streamifier.createReadStream(fileBuffer).pipe(uploadStream);
     });
 };
-
-// --- API Endpoints ---
 
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
@@ -64,11 +62,14 @@ app.post('/api/login', (req, res) => {
     else res.status(401).json({ success: false, message: 'Fjalëkalimi i pasaktë!' });
 });
 
-// Endpoint i thjeshtuar, nuk modifikon më URL-në e imazhit
 app.get('/api/books', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books ORDER BY id DESC');
-        res.json(result.rows);
+        const booksWithFullUrls = result.rows.map(book => ({
+            ...book,
+            image: buildFullImageUrl(book.image)
+        }));
+        res.json(booksWithFullUrls);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së listës së librave.'); }
 });
 
@@ -96,14 +97,17 @@ app.get('/api/book/search', async (req, res) => {
     }
 });
 
-// Endpoint i thjeshtuar, nuk modifikon më URL-në e imazhit
 app.get('/api/book/:id', async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     if (isNaN(bookId)) return res.status(400).json({ message: 'ID e librit nuk është e vlefshme.' });
     try {
         const result = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-        res.json(result.rows[0]);
+
+        const book = result.rows[0];
+        book.image = buildFullImageUrl(book.image);
+        
+        res.json(book);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
@@ -114,7 +118,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     try {
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            imagePath = uploadResult.secure_url; // Use the secure URL from Cloudinary
+            imagePath = uploadResult.secure_url; 
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -172,7 +176,11 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
-        res.json(result.rows);
+        const authorsWithFullUrls = result.rows.map(author => ({
+            ...author,
+            image_url: buildFullImageUrl(author.image_url)
+        }));
+        res.json(authorsWithFullUrls);
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
