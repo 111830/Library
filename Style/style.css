@@ -43,7 +43,7 @@ body {
         justify-content: center;
         margin-top: 60px;
         font-size: 12px;
-        transition: .3s ease;
+        transition: 0s;
         z-index: 100;
     }
 
@@ -69,7 +69,7 @@ body {
         flex-direction: column;
         justify-content: center;
         font-size: 12px;
-        transition: .3s ease;
+        transition: 0s;
         z-index: 100;
     }
 
