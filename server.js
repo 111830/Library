@@ -2,13 +2,21 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const { Pool } = require('pg');
-const { createClient } = require('@supabase/supabase-js');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// Configure Cloudinary using environment variables
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+});
 
+// Configure the database connection pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -27,13 +35,24 @@ const handleServerError = (res, error, message) => {
     return res.status(500).json({ message: message, error: error.message });
 };
 
-const buildFullImageUrl = (imagePath) => {
-    const baseUrl = 'https://rydbyprilwqximbhivgp.supabase.co/storage/v1/object/public/book-covers/';
-    if (imagePath && !imagePath.startsWith('http')) {
-        return baseUrl + imagePath;
-    }
-    return imagePath;
+// Helper function to upload a file buffer to Cloudinary
+const uploadToCloudinary = (fileBuffer) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "book-covers" }, // Optional: organizes uploads into a folder in Cloudinary
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            }
+        );
+        streamifier.createReadStream(fileBuffer).pipe(uploadStream);
+    });
 };
+
+// --- API Endpoints ---
 
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
@@ -46,11 +65,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books ORDER BY id DESC');
-        const booksWithFullUrls = result.rows.map(book => ({
-            ...book,
-            image: buildFullImageUrl(book.image)
-        }));
-        res.json(booksWithFullUrls);
+        res.json(result.rows);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së listës së librave.'); }
 });
 
@@ -65,13 +80,8 @@ app.get('/api/book/search', async (req, res) => {
             pool.query(bookQuery, [`%${query}%`]),
             pool.query(authorQuery, [`%${query}%`])
         ]);
-
-        const booksWithFullUrls = bookResults.rows.map(book => ({
-            ...book,
-            image: buildFullImageUrl(book.image)
-        }));
         
-        const combinedResults = [...booksWithFullUrls, ...authorResults.rows];
+        const combinedResults = [...bookResults.rows, ...authorResults.rows];
         res.json(combinedResults);
     } catch (err) {
         handleServerError(res, err, 'Gabim në server gjatë kërkimit.');
@@ -84,31 +94,18 @@ app.get('/api/book/:id', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-
-        const book = result.rows[0];
-        book.image = buildFullImageUrl(book.image);
-        
-        res.json(book);
+        res.json(result.rows[0]);
     } catch (err) { handleServerError(res, err, 'Gabim gjatë marrjes së detajeve të librit.'); }
 });
 
 app.post('/api/book', upload.single('image'), async (req, res) => {
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
-    let imagePath = null; 
+    let imagePath = null;
 
     try {
         if (req.file) {
-            const fileExt = path.extname(req.file.originalname);
-            const fileName = `${Date.now()}${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers')
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (uploadError) throw uploadError;
-            
-            imagePath = fileName;
-
+            const uploadResult = await uploadToCloudinary(req.file.buffer);
+            imagePath = uploadResult.secure_url; // Use the secure URL from Cloudinary
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -122,10 +119,10 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
             pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
             parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0
         ];
-        const result = await pool.query(query, values);
-        res.status(201).json(result.rows[0]);
+        const dbResult = await pool.query(query, values);
+        res.status(201).json(dbResult.rows[0]);
     } catch (err) {
-        handleServerError(res, err, 'Gabim gjatë shtimit të librit në databazë.');
+        handleServerError(res, err, 'Gabim gjatë shtimit të librit.');
     }
 });
 
@@ -140,17 +137,8 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         let imagePath = existingRows[0].image;
 
         if (req.file) {
-            const fileExt = path.extname(req.file.originalname);
-            const fileName = `${Date.now()}${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers')
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (uploadError) throw uploadError;
-
-            imagePath = fileName;
-
+            const uploadResult = await uploadToCloudinary(req.file.buffer);
+            imagePath = uploadResult.secure_url;
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -175,11 +163,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
-        const authorsWithFullUrls = result.rows.map(author => ({
-            ...author,
-            image_url: buildFullImageUrl(author.image_url)
-        }));
-        res.json(authorsWithFullUrls);
+        res.json(result.rows);
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë leximit të autorëve nga databaza.');
     }
@@ -196,27 +180,15 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         let newImagePath = existingRows[0].image_url;
 
         if (req.file) {
-            const fileName = `${Date.now()}-${req.file.originalname}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('book-covers') 
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (uploadError) throw uploadError;
-
-            newImagePath = fileName;
+            const uploadResult = await uploadToCloudinary(req.file.buffer);
+            newImagePath = uploadResult.secure_url;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
         const values = [name, nationality, description, newImagePath, authorId];
         const result = await pool.query(query, values);
         
-        const updatedAuthor = result.rows[0];
-        if (updatedAuthor) {
-            updatedAuthor.image_url = buildFullImageUrl(updatedAuthor.image_url);
-        }
-
-        res.json({ message: 'Autori u përditësua me sukses!', author: updatedAuthor });
+        res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të autorit.');
     }
