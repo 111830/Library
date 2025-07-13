@@ -2196,3 +2196,9 @@ p.price del {
         vertical-align: middle;
     }
 }
+
+@media (min-width: 768px) {
+    .of-screne-menu {
+        height: 91.5vh;
+    }
+}
