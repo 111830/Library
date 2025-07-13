@@ -144,10 +144,12 @@ fetch('/api/books')
     genreLinksDropdown.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-        if (hamMenu && ofscrean) {
+
+        if (hamMenu && ofScreneMenu) {
             hamMenu.classList.remove('active');
-            ofscrean.classList.remove('active');
+            ofScreneMenu.classList.remove('active');
         }
+
         sessionStorage.setItem('forceReload', 'true');
         const selectedGenre = this.textContent.trim().toLowerCase();
         localStorage.setItem('lastGenre', selectedGenre);
@@ -159,10 +161,12 @@ fetch('/api/books')
     dropdownTitles.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-        if (hamMenu && ofscrean) {
+        
+        if (hamMenu && ofScreneMenu) {
             hamMenu.classList.remove('active');
-            ofscrean.classList.remove('active');
+            ofScreneMenu.classList.remove('active');
         }
+
         sessionStorage.setItem('forceReload', 'true');
         const category = this.textContent.trim().toLowerCase();
         window.location.href = `index.html?genre=${encodeURIComponent(category)}`;
@@ -1139,7 +1143,7 @@ function displayRecommendations() {
     const bookDiv = document.createElement('div');
     bookDiv.className = 'all';
     bookDiv.setAttribute('data-author', book.author);
-    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
+    const maxTitleLength = 35;
     let displayTitle = book.title.toUpperCase();
     if (displayTitle.length > maxTitleLength) {
         displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
