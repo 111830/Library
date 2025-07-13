@@ -88,7 +88,7 @@ function populateChildrensBooksCollage() {
             const bookId = parseInt(urlParams.get('id'), 10);
 
             if (!isNaN(bookId)) {
-                const book = booksDataForGenre.find(b => b.id === bookId);
+                const book = booksDataForGenre.find(b => Number(b.id) === bookId);
                 if (book && book.image) {
                     const imgElement = link.querySelector('img');
                     if (imgElement) {
