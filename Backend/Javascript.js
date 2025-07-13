@@ -953,7 +953,7 @@ function displayTopSellers() {
     bookDiv.className = 'all';
     const subGenre = (Array.isArray(book.genre) && book.genre.length > 1) ? book.genre[1].trim() : 'Other';
     bookDiv.setAttribute('data-genre', subGenre);
-    const maxTitleLength = 50;
+    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
     let displayTitle = book.title.toUpperCase();
     if (displayTitle.length > maxTitleLength) {
         displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
@@ -1067,7 +1067,7 @@ function displayNewBooks() {
     const genreForDataAttr = Array.isArray(book.genre) ? book.genre.join(',') : book.genre;
     bookDiv.setAttribute('data-genre', genreForDataAttr || 'Unknown');
     bookDiv.setAttribute('data-author', book.author);
-    const maxTitleLength = 50;
+    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
     let displayTitle = book.title.toUpperCase();
     if (displayTitle.length > maxTitleLength) {
         displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
@@ -1139,7 +1139,7 @@ function displayRecommendations() {
     const bookDiv = document.createElement('div');
     bookDiv.className = 'all';
     bookDiv.setAttribute('data-author', book.author);
-    const maxTitleLength = 50;
+    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
     let displayTitle = book.title.toUpperCase();
     if (displayTitle.length > maxTitleLength) {
         displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
