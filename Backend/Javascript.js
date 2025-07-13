@@ -70,38 +70,6 @@ const trackUserInterest = (author, genres) => {
   }
 };
 
-function populateChildrensBooksCollage() {
-    const collageContainer = document.querySelector('.lib-femije-kolazh-librash');
-    if (!collageContainer) {
-        console.error('Kontejneri i kolazhit të librave për fëmijë nuk u gjet.');
-        return;
-    }
-
-    const bookLinks = collageContainer.querySelectorAll('a');
-
-    bookLinks.forEach(link => {
-        try {
-            const href = link.getAttribute('href');
-            if (!href || !href.includes('?id=')) return;
-
-            const urlParams = new URLSearchParams(href.split('?')[1]);
-            const bookId = parseInt(urlParams.get('id'), 10);
-
-            if (!isNaN(bookId)) {
-                const book = booksDataForGenre.find(b => b.id === bookId);
-                if (book && book.image) {
-                    const imgElement = link.querySelector('img');
-                    if (imgElement) {
-                        imgElement.src = book.image;
-                        imgElement.alt = book.title; 
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Problem gjatë procesimit të linkut të librit për kolazhin:", link, e);
-        }
-    });
-}
 
 fetch('/api/books')
   .then(response => {
@@ -166,7 +134,7 @@ fetch('/api/books')
     displayNewBooks();
     displayRecommendations();
     initInfoLinks();
-    populateChildrensBooksCollage(); 
+    renderChildrensBookCollage(); // <-- Përdorim funksionin e ri
 
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
@@ -1183,6 +1151,50 @@ function displayRecommendations() {
   });
   recommendationsContainer.style.display = 'block';
   initslider();
+}
+
+// Funksioni i ri për kolazhin e librave për fëmijë
+function renderChildrensBookCollage() {
+    const collageContainer = document.querySelector('.lib-femije-kolazh-librash');
+    if (!collageContainer) return;
+
+    // Këtu mund të ndryshosh ID-të e librave dhe stilin e tyre lehtësisht
+    const collageConfig = [
+        { id: 82, style: "bottom: 0; left: 16%; width: 15%; --rotation: -8deg;" },
+        { id: 83, style: "top: 5%; left: 35%; width: 17%; --rotation: 2deg;" },
+        { id: 84, style: "top: 20%; right: 13%; width: 13%; --rotation: -4deg;" },
+        { id: 81, style: "top: 0; left: 15%; width: 18%; --rotation: -5deg;" },
+        { id: 85, style: "top: 40px; right: 15%; width: 18%; --rotation: 8deg;" },
+        { id: 86, style: "top: 33.33%; left: 25%; width: 16%; --rotation: 3deg;" },
+        { id: 87, style: "top: 50%; right: 25%; width: 15%; --rotation: -7deg;" },
+        { id: 88, style: "bottom: 0; right: 10%; width: 17%; --rotation: 4deg;" },
+        { id: 89, style: "bottom: 20px; left: 35%; width: 14%; --rotation: -2deg;" },
+        { id: 90, style: "bottom: 25%; left: 5%; width: 16%; --rotation: 10deg;" },
+        { id: 91, style: "top: 10%; left: 51%; width: 14%; --rotation: 5deg;" },
+        { id: 92, style: "top: 55%; left: 48%; width: 16%; --rotation: -4deg;" }
+    ];
+
+    collageContainer.innerHTML = '';
+
+    collageConfig.forEach(config => {
+        const book = booksDataForGenre.find(b => b.id === config.id);
+        if (book) {
+            const link = document.createElement('a');
+            link.href = `index1.html?id=${book.id}`;
+
+            const div = document.createElement('div');
+            div.className = 'lib-femije-liber-element';
+            div.style.cssText = config.style;
+
+            const img = document.createElement('img');
+            img.src = book.image;
+            img.alt = book.title;
+
+            div.appendChild(img);
+            link.appendChild(div);
+            collageContainer.appendChild(link);
+        }
+    });
 }
 
 function loadFeaturedAuthors() {
