@@ -33,7 +33,7 @@ body {
     .of-screne-menu {
         overflow-y: auto;
         background-color: white;
-        height: 90vh;
+        height: 91.5vh;
         width: 100%;
         max-width: 450px;
         position: fixed;
@@ -2184,4 +2184,15 @@ p.price del {
 
 .slider-wrapper .shkrimet {
     margin-top: 0px;
+}
+
+@media (max-width: 438px) {
+    .of-screne-menu .dropdown > a {
+        max-width: 280px;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
 }
