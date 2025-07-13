@@ -166,7 +166,7 @@ fetch('/api/books')
     displayNewBooks();
     displayRecommendations();
     initInfoLinks();
-    renderChildrensBookCollage(); // <-- Përdorim funksionin e ri
+    populateChildrensBooksCollage();
 
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
