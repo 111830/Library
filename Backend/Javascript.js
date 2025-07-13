@@ -70,6 +70,39 @@ const trackUserInterest = (author, genres) => {
   }
 };
 
+function populateChildrensBooksCollage() {
+    const collageContainer = document.querySelector('.lib-femije-kolazh-librash');
+    if (!collageContainer) {
+        console.error('Kontejneri i kolazhit të librave për fëmijë nuk u gjet.');
+        return;
+    }
+
+    const bookLinks = collageContainer.querySelectorAll('a');
+
+    bookLinks.forEach(link => {
+        try {
+            const href = link.getAttribute('href');
+            if (!href || !href.includes('?id=')) return;
+
+            const urlParams = new URLSearchParams(href.split('?')[1]);
+            const bookId = parseInt(urlParams.get('id'), 10);
+
+            if (!isNaN(bookId)) {
+                const book = booksDataForGenre.find(b => b.id === bookId);
+                if (book && book.image) {
+                    const imgElement = link.querySelector('img');
+                    if (imgElement) {
+                        imgElement.src = book.image;
+                        imgElement.alt = book.title; 
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Problem gjatë procesimit të linkut të librit për kolazhin:", link, e);
+        }
+    });
+}
+
 fetch('/api/books')
   .then(response => {
     if (!response.ok) {
@@ -133,7 +166,7 @@ fetch('/api/books')
     displayNewBooks();
     displayRecommendations();
     initInfoLinks();
-    populateChildrensBooksCollage();
+    populateChildrensBooksCollage(); 
 
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
@@ -204,7 +237,7 @@ window.addEventListener('popstate', function (event) {
     document.querySelector('.hero-section-background'),
     document.querySelector('.zhvillim'),
     ...document.querySelectorAll('.container'),
-    document.getElementById('recommendations-container'),
+    document.querySelector('.rekomandimet'),
     document.querySelector('.lib-femije-seksion-bg'),
     document.querySelector('.autor-dinamik-mbajtesi'),
     document.querySelector('.seksion-oferte')
@@ -1193,36 +1226,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-function populateChildrensBooksCollage() {
-    const collageContainer = document.querySelector('.lib-femije-kolazh-librash');
-    if (!collageContainer) {
-        console.error('Kontejneri i kolazhit të librave për fëmijë nuk u gjet.');
-        return;
-    }
-
-    const bookLinks = collageContainer.querySelectorAll('a');
-
-    bookLinks.forEach(link => {
-        try {
-            const href = link.getAttribute('href');
-            if (!href || !href.includes('?id=')) return;
-
-            const urlParams = new URLSearchParams(href.split('?')[1]);
-            const bookId = parseInt(urlParams.get('id'), 10);
-
-            if (!isNaN(bookId)) {
-                const book = booksDataForGenre.find(b => b.id === bookId);
-                if (book && book.image) {
-                    const imgElement = link.querySelector('img');
-                    if (imgElement) {
-                        imgElement.src = book.image;
-                        imgElement.alt = book.title;
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Problem gjatë procesimit të linkut të librit për kolazhin:", link, e);
-        }
-    });
-}
