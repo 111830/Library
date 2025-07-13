@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', function () {
   const btnFemije = document.querySelector('.lib-femije-buton-femijesh');
   if (btnFemije) {
@@ -135,6 +133,7 @@ fetch('/api/books')
     displayNewBooks();
     displayRecommendations();
     initInfoLinks();
+    populateChildrensBooksCollage();
 
     const hamMenu = document.querySelector('.ham-menu');
     const ofScreneMenu = document.querySelector('.of-screne-menu');
@@ -1194,3 +1193,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function populateChildrensBooksCollage() {
+    const collageContainer = document.querySelector('.lib-femije-kolazh-librash');
+    if (!collageContainer) {
+        console.error('Kontejneri i kolazhit të librave për fëmijë nuk u gjet.');
+        return;
+    }
+
+    const bookLinks = collageContainer.querySelectorAll('a');
+
+    bookLinks.forEach(link => {
+        try {
+            const href = link.getAttribute('href');
+            if (!href || !href.includes('?id=')) return;
+
+            const urlParams = new URLSearchParams(href.split('?')[1]);
+            const bookId = parseInt(urlParams.get('id'), 10);
+
+            if (!isNaN(bookId)) {
+                const book = booksDataForGenre.find(b => b.id === bookId);
+                if (book && book.image) {
+                    const imgElement = link.querySelector('img');
+                    if (imgElement) {
+                        imgElement.src = book.image;
+                        imgElement.alt = book.title;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Problem gjatë procesimit të linkut të librit për kolazhin:", link, e);
+        }
+    });
+}
