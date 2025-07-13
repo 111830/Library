@@ -2196,3 +2196,11 @@ p.price del {
         vertical-align: middle;
     }
 }
+
+.slider-wrapper .book-list .titulli {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-height: 50px;
+}
