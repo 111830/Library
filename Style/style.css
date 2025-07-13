@@ -2198,9 +2198,16 @@ p.price del {
 }
 
 .slider-wrapper .book-list .titulli {
+    min-height: 50px; 
+    display: flex;
+    align-items: center;
+}
+
+.slider-wrapper .book-list .titulli strong {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
-    min-height: 50px;
+    text-overflow: ellipsis;
+    width: 100%;
 }
