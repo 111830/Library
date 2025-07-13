@@ -1,3 +1,7 @@
+/* YouTube icon color for contact links */
+.contact-links a[title="YouTube"] i {
+    color: #FF0000;
+}
 
 .options-container .options-buttons .close-results-btn {
     background-color: #6B1A1A;
