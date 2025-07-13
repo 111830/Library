@@ -367,10 +367,23 @@ nav {
     height: 220px;
 }
 
-.slider-wrapper .shkrimet p strong {
+.slider-wrapper .shkrimet p:first-child {
     font-size: 18px;
+    line-height: 1.4;
+    height: 2.8em;
+    margin-top: 0;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slider-wrapper .shkrimet p strong {
     font-family: Georgia, 'Times New Roman', Times, serif;
     color: #292524;
+    font-weight: bold;
 }
 
 .slider-wrapper .shkrimet p:not(:first-child):not(.price) {
