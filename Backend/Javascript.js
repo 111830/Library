@@ -178,7 +178,8 @@ fetch('/api/books')
         document.querySelector('.hero-section-background'),
         document.querySelector('.zhvillim'),
         ...document.querySelectorAll('.container'),
-        document.getElementById('recommendations-container'), // <-- KY ËSHTË NDRYSHIMI
+        document.getElementById('recommendations-container'),
+        ...document.querySelectorAll('.rekomandimet'),
         document.querySelector('.lib-femije-seksion-bg'),
         document.querySelector('.autor-dinamik-mbajtesi'),
         document.querySelector('.seksion-oferte')
@@ -204,7 +205,7 @@ window.addEventListener('popstate', function (event) {
     document.querySelector('.hero-section-background'),
     document.querySelector('.zhvillim'),
     ...document.querySelectorAll('.container'),
-    document.getElementById('recommendations-container'), // <-- KY ËSHTË NDRYSHIMI
+    document.getElementById('recommendations-container'),
     document.querySelector('.lib-femije-seksion-bg'),
     document.querySelector('.autor-dinamik-mbajtesi'),
     document.querySelector('.seksion-oferte')
