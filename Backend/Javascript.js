@@ -1,6 +1,5 @@
 
 
-
 document.addEventListener('DOMContentLoaded', function () {
   const btnFemije = document.querySelector('.lib-femije-buton-femijesh');
   if (btnFemije) {
@@ -144,12 +143,10 @@ fetch('/api/books')
     genreLinksDropdown.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-
-        if (hamMenu && ofScreneMenu) {
+        if (hamMenu && ofscrean) {
             hamMenu.classList.remove('active');
-            ofScreneMenu.classList.remove('active');
+            ofscrean.classList.remove('active');
         }
-
         sessionStorage.setItem('forceReload', 'true');
         const selectedGenre = this.textContent.trim().toLowerCase();
         localStorage.setItem('lastGenre', selectedGenre);
@@ -161,12 +158,10 @@ fetch('/api/books')
     dropdownTitles.forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
-        
-        if (hamMenu && ofScreneMenu) {
+        if (hamMenu && ofscrean) {
             hamMenu.classList.remove('active');
-            ofScreneMenu.classList.remove('active');
+            ofscrean.classList.remove('active');
         }
-
         sessionStorage.setItem('forceReload', 'true');
         const category = this.textContent.trim().toLowerCase();
         window.location.href = `index.html?genre=${encodeURIComponent(category)}`;
@@ -925,7 +920,6 @@ function displayNewBooks() {
             </a>`;
     newBooksContainer.appendChild(bookDiv);
   });
-  truncateCardTitles();
   initslider();
 }
 
@@ -957,11 +951,6 @@ function displayTopSellers() {
     bookDiv.className = 'all';
     const subGenre = (Array.isArray(book.genre) && book.genre.length > 1) ? book.genre[1].trim() : 'Other';
     bookDiv.setAttribute('data-genre', subGenre);
-    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
-    let displayTitle = book.title.toUpperCase();
-    if (displayTitle.length > maxTitleLength) {
-        displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
-    }
     let priceHTML = book.offerPrice > 0 ? `<p class="price"><del>${book.price} LEKE</del> <span class="offer-price">${book.offerPrice} LEKE</span></p>` : `<p class="price">${book.price} LEKE</p>`;
     let shortDesc = '';
     if (book.longDescription) {
@@ -973,7 +962,7 @@ function displayTopSellers() {
             <a href="index1.html?id=${book.id}" class="book-link">
                 <img src="${book.image}" alt="${book.title}">
                 <div class="shkrimet">
-                    <p class="titulli"><strong>${displayTitle}</strong></p>
+                    <p class="titulli"><strong>${book.title}</strong></p>
                     <p class="autori">${book.author}</p>
                     <p class="desc">${shortDesc}</p>
                     ${priceHTML}
@@ -1056,47 +1045,42 @@ function filterBooksByOffer() {
   function displayPublishers(publishersList) {}
 }
 
-function displayNewBooks() {
-  const newBooksContainer = document.getElementById('new-books-list');
-  if (!newBooksContainer) return;
-  const newBooks = booksDataForGenre.filter(book => {
-    if (!book.genre) return false;
-    const genres = Array.isArray(book.genre) ? book.genre : [book.genre];
-    return genres.some(g => g.trim().toLowerCase() === 'new');
+function initInfoLinks() {
+  const infoLinks = document.querySelectorAll('.info-link');
+  const allInfoSections = document.querySelectorAll('.info-section');
+  const mainContentSections = [
+    document.querySelector('.hero-section-background'),
+    document.querySelector('.zhvillim'),
+    ...document.querySelectorAll('.container'),
+    document.querySelector('.rekomandimet'),
+    document.querySelector('.lib-femije-seksion-bg'),
+    document.querySelector('.autor-dinamik-mbajtesi'),
+    document.querySelector('.seksion-oferte'),
+    document.getElementById('koherenc')
+  ];
+  infoLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById('info-' + targetId);
+      mainContentSections.forEach(section => {
+        if (section) section.style.display = 'none';
+      });
+      allInfoSections.forEach(section => {
+        section.style.display = 'none';
+      });
+      if (targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const hamMenu = document.querySelector('.ham-menu');
+      const ofScreneMenu = document.querySelector('.of-screne-menu');
+      if (hamMenu && ofScreneMenu) {
+        hamMenu.classList.remove('active');
+        ofScreneMenu.classList.remove('active');
+      }
+    });
   });
-  newBooksContainer.innerHTML = '';
-  newBooks.forEach(book => {
-    const bookDiv = document.createElement('div');
-    bookDiv.className = 'all';
-    const genreForDataAttr = Array.isArray(book.genre) ? book.genre.join(',') : book.genre;
-    bookDiv.setAttribute('data-genre', genreForDataAttr || 'Unknown');
-    bookDiv.setAttribute('data-author', book.author);
-    const maxTitleLength = 35; // E ndryshuam nga 50 në 35
-    let displayTitle = book.title.toUpperCase();
-    if (displayTitle.length > maxTitleLength) {
-        displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
-    }
-    let priceHTML = book.offerPrice > 0 ? `<p class="price"><del>${book.price} LEKE</del> <span class="offer-price">${book.offerPrice} LEKE</span></p>` : `<p class="price">${book.price} LEKE</p>`;
-    let shortDesc = '';
-    if (book.longDescription) {
-      const words = book.longDescription.split(/\s+/);
-      shortDesc = words.slice(0, 10).join(' ');
-      if (words.length > 10) shortDesc += '...';
-    }
-    bookDiv.innerHTML = `
-            <a href="index1.html?id=${book.id}">
-                <img src="${book.image}" alt="${book.title}">
-                <div class="shkrimet">
-                    <p class="titulli"><strong>${displayTitle}</strong></p>
-                    <p>Nga ${book.author}</p>
-                    <p class="desc">${shortDesc}</p>
-                    ${priceHTML}
-                    <button class="add" data-id="${book.id}"><i class="fa-light fa-cart-shopping"></i> Add to Basket</button>
-                </div>
-            </a>`;
-    newBooksContainer.appendChild(bookDiv);
-  });
-  initslider();
 }
 
 function displayRecommendations() {
@@ -1143,11 +1127,6 @@ function displayRecommendations() {
     const bookDiv = document.createElement('div');
     bookDiv.className = 'all';
     bookDiv.setAttribute('data-author', book.author);
-    const maxTitleLength = 35;
-    let displayTitle = book.title.toUpperCase();
-    if (displayTitle.length > maxTitleLength) {
-        displayTitle = displayTitle.substring(0, maxTitleLength).trim() + '...';
-    }
     let priceHTML = book.offerPrice > 0 ? `<p class="price"><del>${book.price} LEKE</del> <span class="offer-price">${book.offerPrice} LEKE</span></p>` : `<p class="price">${book.price} LEKE</p>`;
     let shortDesc = '';
     if (book.longDescription) {
@@ -1159,7 +1138,7 @@ function displayRecommendations() {
             <a href="index1.html?id=${book.id}">
                 <img src="${book.image}" alt="${book.title}">
                 <div class="shkrimet">
-                    <p class="titulli"><strong>${displayTitle}</strong></p>
+                    <p><strong>${book.title.toUpperCase()}</strong></p>
                     <p>Nga ${book.author}</p>
                     <p class="desc">${shortDesc}</p>
                     ${priceHTML}
@@ -1198,17 +1177,3 @@ function loadFeaturedAuthors() {
 }
 
 document.addEventListener('DOMContentLoaded', loadFeaturedAuthors);
-
-document.addEventListener('DOMContentLoaded', function() {
-    const exploreButton = document.querySelector('.hero-button-new');
-    if (exploreButton) {
-        exploreButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            const screenHeight = window.innerHeight;
-            window.scrollTo({
-                top: screenHeight,
-                behavior: 'smooth'
-            });
-        });
-    }
-});
