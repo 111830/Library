@@ -1,4 +1,21 @@
 
+function truncateCardTitles() {
+    const allTitles = document.querySelectorAll('.slider-wrapper .book-list .titulli strong');
+    const maxLength = 55;
+    allTitles.forEach(titleElement => {
+        if (!titleElement.hasAttribute('data-full-title')) {
+            titleElement.setAttribute('data-full-title', titleElement.textContent);
+        }
+        const fullTitle = titleElement.getAttribute('data-full-title');
+        if (fullTitle.length > maxLength) {
+            const truncatedTitle = fullTitle.substring(0, maxLength).trim() + '...';
+            titleElement.textContent = truncatedTitle;
+        } else {
+            titleElement.textContent = fullTitle;
+        }
+    });
+}
+
 
 document.addEventListener('DOMContentLoaded', function () {
   const btnFemije = document.querySelector('.lib-femije-buton-femijesh');
@@ -920,6 +937,7 @@ function displayNewBooks() {
             </a>`;
     newBooksContainer.appendChild(bookDiv);
   });
+  truncateCardTitles();
   initslider();
 }
 
@@ -971,6 +989,7 @@ function displayTopSellers() {
             </a>`;
     topSellersList.appendChild(bookDiv);
   });
+  truncateCardTitles();
   initslider();
 }
 
@@ -1147,6 +1166,7 @@ function displayRecommendations() {
             </a>`;
     bookListEl.appendChild(bookDiv);
   });
+  truncateCardTitles();
   recommendationsContainer.style.display = 'block';
   initslider();
 }
