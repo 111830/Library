@@ -1,3 +1,26 @@
+
+.options-container .options-buttons .close-results-btn {
+    background-color: #6B1A1A;
+    border: 1px solid #6B1A1A;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.options-container .options-buttons .close-results-btn:hover {
+    background-color: #8a2a2a;
+}
+
+.options-container .options-buttons .close-results-btn a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.options-container .options-buttons .close-results-btn i {
+    float: none;
+    margin-right: 5px;
+}
 .no-transition {
     transition: none !important;
 }
