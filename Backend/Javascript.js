@@ -1177,3 +1177,17 @@ function loadFeaturedAuthors() {
 }
 
 document.addEventListener('DOMContentLoaded', loadFeaturedAuthors);
+
+document.addEventListener('DOMContentLoaded', function() {
+    const exploreButton = document.querySelector('.hero-button-new');
+    if (exploreButton) {
+        exploreButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            const screenHeight = window.innerHeight;
+            window.scrollTo({
+                top: screenHeight,
+                behavior: 'smooth'
+            });
+        });
+    }
+});
