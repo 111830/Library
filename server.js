@@ -56,27 +56,20 @@ const uploadToCloudinary = (fileBuffer) => {
 
 const deleteFromCloudinary = async (imageUrl) => {
     if (!imageUrl || !imageUrl.includes('res.cloudinary.com')) {
-        // Nuk është një URL e Cloudinary, kështu që nuk bëjmë asgjë.
         return;
     }
-
     try {
-        // Përdorim një shprehje regulare për të nxjerrë public_id nga URL-ja
-        // Pjesa e kapur është ajo pas /upload/v.../ deri para extension-it të skedarit
         const publicIdRegex = /upload\/(?:v\d+\/)?(.+?)\.(?:[a-z]{3,4})$/i;
         const match = imageUrl.match(publicIdRegex);
 
         if (match && match[1]) {
             const publicId = match[1];
-            console.log(`Po fshihet imazhi i vjetër nga Cloudinary me public_id: ${publicId}`);
             await cloudinary.uploader.destroy(publicId);
         }
     } catch (deleteError) {
-        // Regjistrojmë gabimin por nuk e ndalojmë procesin kryesor
         console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
     }
 };
-
 
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
@@ -321,7 +314,6 @@ app.post('/api/order/checkout', async (req, res) => {
     }
 });
 
-// Global Offers Endpoints
 app.post('/api/books/apply-global-offer', async (req, res) => {
     const { percentage } = req.body;
     if (typeof percentage !== 'number' || percentage < 1 || percentage > 100) {
@@ -345,7 +337,6 @@ app.post('/api/books/remove-all-offers', async (req, res) => {
         handleServerError(res, err, 'Gabim gjatë heqjes së ofertave.');
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Serveri po funksionon në portin ${port}`);
