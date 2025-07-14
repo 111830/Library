@@ -54,6 +54,30 @@ const uploadToCloudinary = (fileBuffer) => {
     });
 };
 
+const deleteFromCloudinary = async (imageUrl) => {
+    if (!imageUrl || !imageUrl.includes('res.cloudinary.com')) {
+        // Nuk është një URL e Cloudinary, kështu që nuk bëjmë asgjë.
+        return;
+    }
+
+    try {
+        // Përdorim një shprehje regulare për të nxjerrë public_id nga URL-ja
+        // Pjesa e kapur është ajo pas /upload/v.../ deri para extension-it të skedarit
+        const publicIdRegex = /upload\/(?:v\d+\/)?(.+?)\.(?:[a-z]{3,4})$/i;
+        const match = imageUrl.match(publicIdRegex);
+
+        if (match && match[1]) {
+            const publicId = match[1];
+            console.log(`Po fshihet imazhi i vjetër nga Cloudinary me public_id: ${publicId}`);
+            await cloudinary.uploader.destroy(publicId);
+        }
+    } catch (deleteError) {
+        // Regjistrojmë gabimin por nuk e ndalojmë procesin kryesor
+        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
+    }
+};
+
+
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
@@ -147,13 +171,17 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
         if (existingRows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
 
-        let imagePath = existingRows[0].image;
+        const oldImagePath = existingRows[0].image;
+        let newImagePath = oldImagePath;
+        let isNewImage = false;
 
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            imagePath = uploadResult.secure_url;
-        } else if (imageUrl) {
-            imagePath = imageUrl;
+            newImagePath = uploadResult.secure_url;
+            isNewImage = true;
+        } else if (imageUrl && imageUrl !== oldImagePath) {
+            newImagePath = imageUrl;
+            isNewImage = true;
         }
         
         const languagesForDb = JSON.parse(languages || '[]');
@@ -162,11 +190,17 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
             pershkrimi = $7, botimi = $8, page = $9, year = $10, "offerPrice" = $11, languages = $12, quantity = $13 
             WHERE id = $14 RETURNING *;`;
         const values = [
-            title, parseFloat(price) || 0, imagePath, (genre || '').split(','), author, longDescription,
+            title, parseFloat(price) || 0, newImagePath, (genre || '').split(','), author, longDescription,
             pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
             parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0, bookId
         ];
+        
         const result = await pool.query(query, values);
+
+        if (isNewImage && oldImagePath) {
+            await deleteFromCloudinary(oldImagePath);
+        }
+        
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të librit.');
@@ -194,16 +228,24 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         const { rows: existingRows } = await pool.query('SELECT image_url FROM featured_authors WHERE id = $1', [authorId]);
         if (existingRows.length === 0) return res.status(404).json({ message: 'Autori nuk u gjet.' });
         
-        let newImagePath = existingRows[0].image_url;
+        const oldImagePath = existingRows[0].image_url;
+        let newImagePath = oldImagePath;
+        let isNewImage = false;
 
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
             newImagePath = uploadResult.secure_url;
+            isNewImage = true;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
         const values = [name, nationality, description, newImagePath, authorId];
+        
         const result = await pool.query(query, values);
+        
+        if (isNewImage && oldImagePath) {
+            await deleteFromCloudinary(oldImagePath);
+        }
         
         res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
     } catch (err) {
@@ -260,6 +302,7 @@ app.post('/api/order/checkout', async (req, res) => {
     }
 });
 
+// Global Offers Endpoints
 app.post('/api/books/apply-global-offer', async (req, res) => {
     const { percentage } = req.body;
     if (typeof percentage !== 'number' || percentage < 1 || percentage > 100) {
