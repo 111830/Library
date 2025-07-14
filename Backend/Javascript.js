@@ -349,7 +349,7 @@ window.addEventListener('popstate', function (event) {
     if (stateSelect) {
       stateSelect.addEventListener('change', () => {
         let total = basket.reduce((sum, product) => sum + product.price * product.quantity, 0);
-        const shippingCost = stateSelect.value === 'Shqipëri' ? 200 : stateSelect.value === 'Kosovë' ? 500 : 0;
+        const shippingCost = stateSelect.value === 'Tiranë' ? 200 : stateSelect.value === 'Jashtë Tirane' ? 300 : stateSelect.value === 'Kosovë' ? 600 : 0;
         if (totalAmountSpan) totalAmountSpan.textContent = `${total + shippingCost} LEK`;
       });
     }

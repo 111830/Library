@@ -253,6 +253,16 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
     }
 });
 
+app.get('/api/authors', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT DISTINCT author FROM books WHERE author IS NOT NULL ORDER BY author ASC');
+        const authors = result.rows.map(row => row.author);
+        res.json(authors);
+    } catch (err) {
+        handleServerError(res, err, 'Gabim gjatë marrjes së listës së autorëve.');
+    }
+});
+
 app.post('/api/order/checkout', async (req, res) => {
     const { basket, userInfo } = req.body;
     if (!basket || !Array.isArray(basket) || basket.length === 0) return res.status(400).json({ message: "Shporta është bosh ose e pavlefshme." });
@@ -275,7 +285,7 @@ app.post('/api/order/checkout', async (req, res) => {
         let summaryText = basket.map(item => `- ${item.name} (Sasia: ${item.quantity})`).join('\n');
         
         const totalCost = basket.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shippingCost = userInfo.state === 'Shqipëri' ? 200 : userInfo.state === 'Kosovë' ? 500 : 0;
+        const shippingCost = userInfo.state === 'Tiranë' ? 200 : userInfo.state === 'Jashtë Tirane' ? 300 : userInfo.state === 'Kosovë' ? 600 : 0;
         const finalTotal = totalCost + shippingCost;
         const message = `*POROSI E RE NGA FAQJA!* 📢\n\n` +
                         `*Klienti:* ${userInfo.firstName} ${userInfo.lastName}\n` +
@@ -289,7 +299,16 @@ app.post('/api/order/checkout', async (req, res) => {
                         `*TOTALI FINAL: ${finalTotal} LEK*`;
         const encodedMessage = encodeURIComponent(message);
         const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${yourPhoneNumber}&text=${encodedMessage}&apikey=${yourApiKey}`;
-        fetch(apiUrl).catch(err => console.error("Gabim gjate dergimit te mesazhit ne WhatsApp (nuk ndikon porosine):", err));
+        
+        try {
+            const botResponse = await fetch(apiUrl);
+            if (!botResponse.ok) {
+                const errorText = await botResponse.text();
+                console.error(`Gabim gjatë dërgimit të mesazhit në WhatsApp. Statusi: ${botResponse.status}. Përgjigja: ${errorText}`);
+            }
+        } catch (err) {
+            console.error("Gabim rrjeti gjatë dërgimit të mesazhit në WhatsApp (nuk ndikon porosinë):", err);
+        }
         
         await client.query('COMMIT');
         res.status(200).json({ success: true, message: "Porosia u regjistrua dhe njoftimi u dërgua me sukses." });
