@@ -293,23 +293,11 @@ app.post('/api/order/checkout', async (req, res) => {
                         `*Totali i librave:* ${totalCost} LEK\n` +
                         `*Posta:* ${shippingCost} LEK\n` +
                         `*TOTALI FINAL: ${finalTotal} LEK*`;
-        const apiUrl = `https://api.callmebot.com/whatsapp.php`;
-
-        const postData = new URLSearchParams({
-            phone: yourPhoneNumber,
-            text: message,
-            apikey: yourApiKey
-        });
+        const encodedMessage = encodeURIComponent(message);
+        const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${yourPhoneNumber}&text=${encodedMessage}&apikey=${yourApiKey}`;
         
         try {
-            const botResponse = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: postData
-            });
-
+            const botResponse = await fetch(apiUrl);
             if (!botResponse.ok) {
                 const errorText = await botResponse.text();
                 console.error(`Gabim gjatë dërgimit të mesazhit në WhatsApp. Statusi: ${botResponse.status}. Përgjigja: ${errorText}`);
