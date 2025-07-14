@@ -260,6 +260,31 @@ app.post('/api/order/checkout', async (req, res) => {
     }
 });
 
+app.post('/api/books/apply-global-offer', async (req, res) => {
+    const { percentage } = req.body;
+    if (typeof percentage !== 'number' || percentage < 1 || percentage > 100) {
+        return res.status(400).json({ message: 'Përqindja duhet të jetë një numër midis 1 dhe 100.' });
+    }
+    try {
+        const query = `UPDATE books SET "offerPrice" = ROUND(price - (price * $1 / 100.0))`;
+        await pool.query(query, [percentage]);
+        res.status(200).json({ message: `Oferta prej ${percentage}% u aplikua me sukses për të gjithë librat.` });
+    } catch (err) {
+        handleServerError(res, err, 'Gabim gjatë aplikimit të ofertës globale.');
+    }
+});
+
+app.post('/api/books/remove-all-offers', async (req, res) => {
+    try {
+        const query = `UPDATE books SET "offerPrice" = NULL`;
+        await pool.query(query);
+        res.status(200).json({ message: 'Të gjitha ofertat u hoqën me sukses nga të gjithë librat.' });
+    } catch (err) {
+        handleServerError(res, err, 'Gabim gjatë heqjes së ofertave.');
+    }
+});
+
+
 app.listen(port, () => {
     console.log(`Serveri po funksionon në portin ${port}`);
 });

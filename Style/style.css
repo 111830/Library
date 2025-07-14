@@ -1,4 +1,3 @@
-/* YouTube icon color for contact links */
 .contact-links a[title="YouTube"] i {
     color: #6B1A1A;
 }
@@ -294,7 +293,7 @@ nav {
     line-height: 1.8;
     margin: 0;
     margin-bottom: 2rem;
-    color: #4a4a4a;
+    color: black;
     text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.3);
 }
 
@@ -1639,7 +1638,7 @@ nav {
 }
 
 .autor-dinamik-mbajtesi {
-    padding-top: 6rem;
+    padding-top: 3rem;
     padding-bottom: 6rem;
     overflow: hidden;
 }

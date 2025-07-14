@@ -259,6 +259,17 @@
         </div>
     </div>
     
+    <div class="manager-container" style="margin-top: 2rem;">
+        <hr style="margin: 2rem 0;">
+        <h2>Menaxho Ofertat Globale</h2>
+        <div id="global-offer-form" style="padding: 1.5rem; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;">
+            <label for="offerPercentage" style="display: block; margin-bottom: 0.5rem;">Zbritje Globale (%):</label>
+            <input type="number" id="offerPercentage" name="offerPercentage" min="1" max="100" placeholder="p.sh. 10 për 10% ulje" style="width: calc(100% - 24px); margin-bottom: 1rem;">
+            <button type="button" id="applyOfferBtn">Apliko Ofertën</button>
+            <button type="button" id="removeOffersBtn" style="background-color: #dc3545; margin-left: 10px;">Hiq të Gjitha Ofertat</button>
+        </div>
+    </div>
+
     <style>
     .author-editor-card {
         background-color: #f9f9f9;
@@ -640,6 +651,44 @@
                 loadAuthorManager();
             } catch (err) { alert(`Gabim: ${err.message}`); }
         }
+
+        // Global Offers Logic
+        document.getElementById('applyOfferBtn').addEventListener('click', async () => {
+          const percentage = document.getElementById('offerPercentage').value;
+          if (!percentage || percentage < 1 || percentage > 100) {
+            alert('Ju lutem vendosni një përqindje të vlefshme midis 1 dhe 100.');
+            return;
+          }
+          if (confirm(`Jeni i sigurt që doni të aplikoni një zbritje prej ${percentage}% për të gjithë librat? Kjo do të mbishkruajë çdo ofertë ekzistuese.`)) {
+            try {
+              const response = await fetch('/api/books/apply-global-offer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ percentage: parseFloat(percentage) })
+              });
+              const result = await response.json();
+              if (!response.ok) throw new Error(result.message);
+              alert(result.message);
+            } catch (err) {
+              alert('Gabim: ' + err.message);
+            }
+          }
+        });
+
+        document.getElementById('removeOffersBtn').addEventListener('click', async () => {
+          if (confirm('Jeni i sigurt që doni të hiqni të gjitha ofertat nga të gjithë librat?')) {
+             try {
+              const response = await fetch('/api/books/remove-all-offers', {
+                method: 'POST'
+              });
+              const result = await response.json();
+              if (!response.ok) throw new Error(result.message);
+              alert(result.message);
+            } catch (err) {
+              alert('Gabim: ' + err.message);
+            }
+          }
+        });
 
     </script>
 </body>
