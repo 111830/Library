@@ -151,6 +151,8 @@
             display: block;
             margin-top: 10px;
             border-radius: 5px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -180,12 +182,15 @@
             <input type="text" id="author" name="author" required>
 
             <div class="image-container">
-                <label for="image">Foto (ngarko një skedar):</label>
+                <label for="image">Ngarko Foto të Re:</label>
                 <input type="file" id="image" name="image" accept="image/*">
 
-                <label for="imageUrl" style="margin-top: 1rem; display: block;">Ose vendos një link imazhi:</label>
+                <label for="imageUrl" style="margin-top: 1rem; display: block;">Ose vendos një Link Imazhi të Ri:</label>
                 <input type="text" id="imageUrl" name="imageUrl" placeholder="p.sh. https://example.com/cover.jpg">
-                <div id="imagePreviewContainer"></div>
+                
+                <p style="font-size: 0.9em; color: #555; margin-top: 1rem; margin-bottom: 5px;">Fotoja Aktuale:</p>
+                <div id="imagePreviewContainer">
+                    </div>
             </div>
 
             <div class="category-selects">
@@ -361,12 +366,16 @@
             document.querySelector('input[value="Shqip"]').dispatchEvent(new Event('change'));
         }
 
+        // NDRYSHIMI KËTU: Funksioni për të shfaqur imazhin
         function showImagePreview(src) {
-            imagePreviewContainer.innerHTML = '';
-            if (src) {
+            imagePreviewContainer.innerHTML = ''; // Pastron konteinerin
+            if (src && typeof src === 'string' && src.trim() !== '') {
                 const img = document.createElement('img');
-                img.src = src;
+                img.src = src; // Vendos URL-në e plotë
+                img.alt = "Fotoja Aktuale";
                 imagePreviewContainer.appendChild(img);
+            } else {
+                 imagePreviewContainer.innerHTML = '<p style="font-style: italic; color: #888;">Ky libër nuk ka foto aktuale.</p>';
             }
         }
 
@@ -384,11 +393,16 @@
             document.getElementById('quantity').value = book.quantity || 0;
             submitButton.textContent = 'Përditëso Librin';
 
+            // NDRYSHIMI KËTU: Logjika për të shfaqur imazhin dhe URL-në
             if (book.image) {
+                // `book.image` vjen si URL e plotë nga serveri falë `buildFullImageUrl`
+                showImagePreview(book.image); 
+                // Vendos URL-në në fushën e tekstit vetëm nëse është një URL e plotë
                 if (book.image.startsWith('http')) {
                     imageUrlInput.value = book.image;
                 }
-                showImagePreview(book.image);
+            } else {
+                showImagePreview(null); // Trajton rastin kur nuk ka imazh
             }
 
             if (book.offerPrice && book.offerPrice > 0) {
@@ -441,7 +455,6 @@
                 mainCategorySelect.appendChild(option);
             });
             resetForm();
-
             loadAuthorManager();
         });
 
@@ -608,6 +621,7 @@
                 authors.forEach(author => {
                     const formContainer = document.createElement('div');
                     formContainer.className = 'author-editor-card';
+                    // NDRYSHIMI KËTU: Heqim slash-in e gabuar (/) para URL-së së imazhit të autorit
                     formContainer.innerHTML = `
                         <h3>Autori #${author.id}</h3>
                         <form class="author-form" data-id="${author.id}">
@@ -621,7 +635,7 @@
                                 <label>Foto e Re (opsionale):</label>
                                 <input type="file" name="image" accept="image/*">
                                 <p style="font-size: 0.8em;">Fotoja Aktuale:</p>
-                                <img src="/${author.image_url}" alt="Foto aktuale" style="max-width: 100px; border-radius: 5px;">
+                                <img src="${author.image_url}" alt="Foto aktuale" style="max-width: 100px; border-radius: 5px;">
                             </div>
                             <button type="submit" style="margin-top: 1rem;">Ruaj Ndryshimet</button>
                         </form>
@@ -652,7 +666,6 @@
             } catch (err) { alert(`Gabim: ${err.message}`); }
         }
 
-        // Global Offers Logic
         document.getElementById('applyOfferBtn').addEventListener('click', async () => {
           const percentage = document.getElementById('offerPercentage').value;
           if (!percentage || percentage < 1 || percentage > 100) {
