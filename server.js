@@ -57,21 +57,20 @@ const uploadToCloudinary = (fileBuffer) => {
     });
 };
 
+// Funksioni i fshirjes nuk do të përdoret në logjikën e përditësimit për momentin
 const deleteFromCloudinary = async (publicId) => {
     if (!publicId || publicId.startsWith('http')) {
-        console.log("INFO: Nuk ka public_id të vlefshëm për fshirje nga Cloudinary:", publicId);
         return;
     }
-
     try {
-        console.log(`INFO: Po tentohet fshirja e imazhit nga Cloudinary me public_id: ${publicId}`);
         await cloudinary.uploader.destroy(publicId);
-        console.log(`SUKSES: Imazhi ${publicId} u fshi nga Cloudinary.`);
     } catch (deleteError) {
-        console.error('GABIM: Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
+        console.error('Gabim gjatë fshirjes nga Cloudinary:', deleteError);
     }
 };
 
+
+// --- Rrugët e tjera mbeten të njëjta ---
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
@@ -157,39 +156,33 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
+
+// === RRUGA E PËRDITËSUAR DHE E THJESHTUAR ===
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
-    
+
     try {
-        console.log(`\n--- Fillon Përditësimi për Librin ID: ${bookId} ---`);
-        
+        // Së pari, marrim imazhin aktual nga databaza, në rast se nuk ka ndryshim
         const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
         if (existingRows.length === 0) {
             return res.status(404).json({ message: 'Libri nuk u gjet.' });
         }
         
-        const oldImageId = existingRows[0].image;
-        let newImageId = oldImageId;
-        let imageHasChanged = false;
+        let newImageId = existingRows[0].image; // Vlera fillestare është imazhi i vjetër
 
-        console.log(`INFO: Imazhi i vjetër në DB është: ${oldImageId}`);
-
+        // Kontrollo nëse ka një skedar të ri të ngarkuar
         if (req.file) {
-            console.log("INFO: U detektua një skedar i ri ('req.file'). Po ngarkohet në Cloudinary...");
+            console.log("Po ngarkohet skedari i ri...");
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            newImageId = uploadResult.public_id;
-            imageHasChanged = true;
-            console.log(`SUKSES: Ngarkimi i ri përfundoi. Public ID i ri: ${newImageId}`);
-        } else if (imageUrl && imageUrl !== buildFullImageUrl(oldImageId)) {
-            console.log("INFO: U detektua një URL e re dhe e ndryshme nga e vjetra.");
+            newImageId = uploadResult.public_id; // Merr public_id e imazhit të ri
+            console.log("Skedari i ri u ngarkua. Public ID:", newImageId);
+        } else if (imageUrl && imageUrl !== buildFullImageUrl(newImageId)) {
+            // Ose nëse është dhënë një URL e re
             newImageId = imageUrl;
-            imageHasChanged = true;
-            console.log(`INFO: URL e re e imazhit: ${newImageId}`);
-        } else {
-            console.log("INFO: Nuk ka skedar ose URL të re për imazhin. Imazhi mbetet i njëjtë.");
         }
-        
+
+        // Tani përditëso databazën me të gjitha vlerat, përfshirë imazhin e ri
         const languagesForDb = JSON.parse(languages || '[]');
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
@@ -201,23 +194,19 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
             parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0, bookId
         ];
         
-        console.log(`INFO: Po ekzekutohet query i përditësimit në DB me imazhin: ${newImageId}`);
         const result = await pool.query(query, values);
-        console.log("SUKSES: Databaza u përditësua me sukses.");
-
-        if (imageHasChanged && oldImageId) {
-            console.log("INFO: Imazhi ka ndryshuar, po thërritet funksioni i fshirjes për imazhin e vjetër.");
-            await deleteFromCloudinary(oldImageId);
-        }
         
-        console.log(`--- Përfundoi Përditësimi për Librin ID: ${bookId} ---\n`);
+        // LOGJIKA E FSHIRJES ËSHTË HEQUR PËR T'U PËRQËNDRUAR TEK PËRDITËSIMI
+        
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
+
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të librit.');
     }
 });
 
 
+// --- Rrugët e tjera mbeten të njëjta ---
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
@@ -239,24 +228,17 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         const { rows: existingRows } = await pool.query('SELECT image_url FROM featured_authors WHERE id = $1', [authorId]);
         if (existingRows.length === 0) return res.status(404).json({ message: 'Autori nuk u gjet.' });
         
-        const oldImagePath = existingRows[0].image_url;
-        let newImagePath = oldImagePath;
-        let shouldDeleteOld = false;
+        let newImagePath = existingRows[0].image_url;
 
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
             newImagePath = uploadResult.public_id;
-            shouldDeleteOld = true;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
         const values = [name, nationality, description, newImagePath, authorId];
         
         const result = await pool.query(query, values);
-        
-        if (shouldDeleteOld && oldImagePath) {
-            await deleteFromCloudinary(oldImagePath);
-        }
         
         res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
     } catch (err) {
