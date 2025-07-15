@@ -44,33 +44,37 @@ const buildFullImageUrl = (imagePath) => {
     return baseUrl + imagePath;
 };
 
-const uploadToCloudinary = (fileBuffer) => {
+const uploadToCloudinary = (file) => {
     return new Promise((resolve, reject) => {
+        const filenameWithoutExt = path.parse(file.originalname).name;
+
         const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: "book-covers" },
+            {
+                folder: "book-covers",
+                public_id: filenameWithoutExt,
+                overwrite: true 
+            },
             (error, result) => {
                 if (error) reject(error);
                 else resolve(result);
             }
         );
-        streamifier.createReadStream(fileBuffer).pipe(uploadStream);
+        streamifier.createReadStream(file.buffer).pipe(uploadStream);
     });
 };
 
-// Funksioni i fshirjes nuk do të përdoret në logjikën e përditësimit për momentin
 const deleteFromCloudinary = async (publicId) => {
     if (!publicId || publicId.startsWith('http')) {
         return;
     }
     try {
         await cloudinary.uploader.destroy(publicId);
+        console.log(`Imazhi ${publicId} u fshi me sukses nga Cloudinary.`);
     } catch (deleteError) {
         console.error('Gabim gjatë fshirjes nga Cloudinary:', deleteError);
     }
 };
 
-
-// --- Rrugët e tjera mbeten të njëjta ---
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
     const { password } = req.body;
@@ -134,7 +138,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
 
     try {
         if (req.file) {
-            const uploadResult = await uploadToCloudinary(req.file.buffer);
+            const uploadResult = await uploadToCloudinary(req.file);
             imagePath = uploadResult.public_id; 
         } else if (imageUrl) {
             imagePath = imageUrl;
@@ -156,33 +160,29 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
-
-// === RRUGA E PËRDITËSUAR DHE E THJESHTUAR ===
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
-
+    
     try {
-        // Së pari, marrim imazhin aktual nga databaza, në rast se nuk ka ndryshim
         const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
         if (existingRows.length === 0) {
             return res.status(404).json({ message: 'Libri nuk u gjet.' });
         }
         
-        let newImageId = existingRows[0].image; // Vlera fillestare është imazhi i vjetër
+        const oldImageId = existingRows[0].image;
+        let newImageId = oldImageId;
+        let imageHasChanged = false;
 
-        // Kontrollo nëse ka një skedar të ri të ngarkuar
         if (req.file) {
-            console.log("Po ngarkohet skedari i ri...");
-            const uploadResult = await uploadToCloudinary(req.file.buffer);
-            newImageId = uploadResult.public_id; // Merr public_id e imazhit të ri
-            console.log("Skedari i ri u ngarkua. Public ID:", newImageId);
-        } else if (imageUrl && imageUrl !== buildFullImageUrl(newImageId)) {
-            // Ose nëse është dhënë një URL e re
+            const uploadResult = await uploadToCloudinary(req.file);
+            newImageId = uploadResult.public_id;
+            imageHasChanged = true;
+        } else if (imageUrl && imageUrl !== buildFullImageUrl(oldImageId)) {
             newImageId = imageUrl;
+            imageHasChanged = true;
         }
-
-        // Tani përditëso databazën me të gjitha vlerat, përfshirë imazhin e ri
+        
         const languagesForDb = JSON.parse(languages || '[]');
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
@@ -195,18 +195,17 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         ];
         
         const result = await pool.query(query, values);
-        
-        // LOGJIKA E FSHIRJES ËSHTË HEQUR PËR T'U PËRQËNDRUAR TEK PËRDITËSIMI
+
+        if (imageHasChanged && oldImageId) {
+            await deleteFromCloudinary(oldImageId);
+        }
         
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
-
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të librit.');
     }
 });
 
-
-// --- Rrugët e tjera mbeten të njëjta ---
 app.get('/api/featured-authors', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM featured_authors ORDER BY id');
@@ -228,17 +227,24 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         const { rows: existingRows } = await pool.query('SELECT image_url FROM featured_authors WHERE id = $1', [authorId]);
         if (existingRows.length === 0) return res.status(404).json({ message: 'Autori nuk u gjet.' });
         
-        let newImagePath = existingRows[0].image_url;
+        const oldImagePath = existingRows[0].image_url;
+        let newImagePath = oldImagePath;
+        let shouldDeleteOld = false;
 
         if (req.file) {
-            const uploadResult = await uploadToCloudinary(req.file.buffer);
+            const uploadResult = await uploadToCloudinary(req.file);
             newImagePath = uploadResult.public_id;
+            shouldDeleteOld = true;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
         const values = [name, nationality, description, newImagePath, authorId];
         
         const result = await pool.query(query, values);
+
+        if (shouldDeleteOld && oldImagePath) {
+            await deleteFromCloudinary(oldImagePath);
+        }
         
         res.json({ message: 'Autori u përditësua me sukses!', author: result.rows[0] });
     } catch (err) {
