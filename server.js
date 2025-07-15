@@ -56,7 +56,7 @@ const uploadToCloudinary = (fileBuffer) => {
 
 const deleteFromCloudinary = async (imageUrl) => {
     if (!imageUrl || !imageUrl.includes('res.cloudinary.com')) {
-        return;
+        return; 
     }
 
     try {
@@ -69,7 +69,7 @@ const deleteFromCloudinary = async (imageUrl) => {
             await cloudinary.uploader.destroy(publicId);
         }
     } catch (deleteError) {
-        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
+        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary (mund të mos ketë ekzistuar):', deleteError);
     }
 };
 
@@ -159,6 +159,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
+
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
@@ -181,6 +182,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         }
         
         const languagesForDb = JSON.parse(languages || '[]');
+        
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
             pershkrimi = $7, botimi = $8, page = $9, year = $10, "offerPrice" = $11, languages = $12, quantity = $13 
@@ -193,7 +195,7 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
         
         const result = await pool.query(query, values);
 
-        if (isNewImage && oldImagePath) {
+            if (isNewImage && oldImagePath) {
             await deleteFromCloudinary(oldImagePath);
         }
         
