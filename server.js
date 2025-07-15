@@ -59,15 +59,16 @@ const uploadToCloudinary = (fileBuffer) => {
 
 const deleteFromCloudinary = async (publicId) => {
     if (!publicId || publicId.startsWith('http')) {
-        console.log("Nuk ka public_id të vlefshëm për fshirje nga Cloudinary.");
+        console.log("INFO: Nuk ka public_id të vlefshëm për fshirje nga Cloudinary:", publicId);
         return;
     }
 
     try {
-        console.log(`Po fshihet imazhi i vjetër nga Cloudinary me public_id: ${publicId}`);
+        console.log(`INFO: Po tentohet fshirja e imazhit nga Cloudinary me public_id: ${publicId}`);
         await cloudinary.uploader.destroy(publicId);
+        console.log(`SUKSES: Imazhi ${publicId} u fshi nga Cloudinary.`);
     } catch (deleteError) {
-        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
+        console.error('GABIM: Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
     }
 };
 
@@ -161,24 +162,32 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
     
     try {
+        console.log(`\n--- Fillon Përditësimi për Librin ID: ${bookId} ---`);
+        
         const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
         if (existingRows.length === 0) {
             return res.status(404).json({ message: 'Libri nuk u gjet.' });
         }
         
-        const oldPublicId = existingRows[0].image;
-        let newPublicId = oldPublicId;
-        let shouldDeleteOldImage = false;
+        const oldImageId = existingRows[0].image;
+        let newImageId = oldImageId;
+        let imageHasChanged = false;
+
+        console.log(`INFO: Imazhi i vjetër në DB është: ${oldImageId}`);
 
         if (req.file) {
+            console.log("INFO: U detektua një skedar i ri ('req.file'). Po ngarkohet në Cloudinary...");
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            newPublicId = uploadResult.public_id;
-            shouldDeleteOldImage = true;
-            console.log("Imazh i ri u ngarkua. Public ID i ri:", newPublicId);
-        } else if (imageUrl && imageUrl !== buildFullImageUrl(oldPublicId)) {
-            newPublicId = imageUrl;
-            shouldDeleteOldImage = true;
-            console.log("Link i ri imazhi u vendos:", newPublicId);
+            newImageId = uploadResult.public_id;
+            imageHasChanged = true;
+            console.log(`SUKSES: Ngarkimi i ri përfundoi. Public ID i ri: ${newImageId}`);
+        } else if (imageUrl && imageUrl !== buildFullImageUrl(oldImageId)) {
+            console.log("INFO: U detektua një URL e re dhe e ndryshme nga e vjetra.");
+            newImageId = imageUrl;
+            imageHasChanged = true;
+            console.log(`INFO: URL e re e imazhit: ${newImageId}`);
+        } else {
+            console.log("INFO: Nuk ka skedar ose URL të re për imazhin. Imazhi mbetet i njëjtë.");
         }
         
         const languagesForDb = JSON.parse(languages || '[]');
@@ -187,22 +196,27 @@ app.put('/api/book/:id', upload.single('image'), async (req, res) => {
             pershkrimi = $7, botimi = $8, page = $9, year = $10, "offerPrice" = $11, languages = $12, quantity = $13 
             WHERE id = $14 RETURNING *;`;
         const values = [
-            title, parseFloat(price) || 0, newPublicId, (genre || '').split(','), author, longDescription,
+            title, parseFloat(price) || 0, newImageId, (genre || '').split(','), author, longDescription,
             pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
             parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0, bookId
         ];
         
+        console.log(`INFO: Po ekzekutohet query i përditësimit në DB me imazhin: ${newImageId}`);
         const result = await pool.query(query, values);
+        console.log("SUKSES: Databaza u përditësua me sukses.");
 
-        if (shouldDeleteOldImage && oldPublicId) {
-            await deleteFromCloudinary(oldPublicId);
+        if (imageHasChanged && oldImageId) {
+            console.log("INFO: Imazhi ka ndryshuar, po thërritet funksioni i fshirjes për imazhin e vjetër.");
+            await deleteFromCloudinary(oldImageId);
         }
         
+        console.log(`--- Përfundoi Përditësimi për Librin ID: ${bookId} ---\n`);
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
     } catch (err) {
         handleServerError(res, err, 'Gabim gjatë përditësimit të librit.');
     }
 });
+
 
 app.get('/api/featured-authors', async (req, res) => {
     try {
