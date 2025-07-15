@@ -35,10 +35,13 @@ const handleServerError = (res, error, message) => {
 
 const buildFullImageUrl = (imagePath) => {
     const baseUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`;
-    if (imagePath && !imagePath.startsWith('http')) {
-        return baseUrl + imagePath;
+    if (!imagePath) {
+        return null;
     }
-    return imagePath;
+    if (imagePath.startsWith('http')) {
+        return imagePath;
+    }
+    return baseUrl + imagePath;
 };
 
 const uploadToCloudinary = (fileBuffer) => {
@@ -54,25 +57,19 @@ const uploadToCloudinary = (fileBuffer) => {
     });
 };
 
-const deleteFromCloudinary = async (imageUrl) => {
-    if (!imageUrl || !imageUrl.includes('res.cloudinary.com')) {
-        return; 
+const deleteFromCloudinary = async (publicId) => {
+    if (!publicId || publicId.startsWith('http')) {
+        console.log("Nuk ka public_id të vlefshëm për fshirje nga Cloudinary.");
+        return;
     }
 
     try {
-        const publicIdRegex = /upload\/(?:v\d+\/)?(.+?)\.(?:[a-z]{3,4})$/i;
-        const match = imageUrl.match(publicIdRegex);
-
-        if (match && match[1]) {
-            const publicId = match[1];
-            console.log(`Po fshihet imazhi i vjetër nga Cloudinary me public_id: ${publicId}`);
-            await cloudinary.uploader.destroy(publicId);
-        }
+        console.log(`Po fshihet imazhi i vjetër nga Cloudinary me public_id: ${publicId}`);
+        await cloudinary.uploader.destroy(publicId);
     } catch (deleteError) {
-        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary (mund të mos ketë ekzistuar):', deleteError);
+        console.error('Dështoi fshirja e imazhit të vjetër nga Cloudinary:', deleteError);
     }
 };
-
 
 app.post('/api/login', (req, res) => {
     const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD;
@@ -138,7 +135,7 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     try {
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            imagePath = uploadResult.secure_url; 
+            imagePath = uploadResult.public_id; 
         } else if (imageUrl) {
             imagePath = imageUrl;
         }
@@ -159,44 +156,46 @@ app.post('/api/book', upload.single('image'), async (req, res) => {
     }
 });
 
-
 app.put('/api/book/:id', upload.single('image'), async (req, res) => {
     const bookId = parseInt(req.params.id, 10);
     const { title, price, genre, author, longDescription, pershkrimi, botimi, page, year, offerPrice, languages, quantity, imageUrl } = req.body;
     
     try {
         const { rows: existingRows } = await pool.query('SELECT image FROM books WHERE id = $1', [bookId]);
-        if (existingRows.length === 0) return res.status(404).json({ message: 'Libri nuk u gjet.' });
-
-        const oldImagePath = existingRows[0].image;
-        let newImagePath = oldImagePath;
-        let isNewImage = false;
+        if (existingRows.length === 0) {
+            return res.status(404).json({ message: 'Libri nuk u gjet.' });
+        }
+        
+        const oldPublicId = existingRows[0].image;
+        let newPublicId = oldPublicId;
+        let shouldDeleteOldImage = false;
 
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            newImagePath = uploadResult.secure_url;
-            isNewImage = true;
-        } else if (imageUrl && imageUrl !== oldImagePath) {
-            newImagePath = imageUrl;
-            isNewImage = true;
+            newPublicId = uploadResult.public_id;
+            shouldDeleteOldImage = true;
+            console.log("Imazh i ri u ngarkua. Public ID i ri:", newPublicId);
+        } else if (imageUrl && imageUrl !== buildFullImageUrl(oldPublicId)) {
+            newPublicId = imageUrl;
+            shouldDeleteOldImage = true;
+            console.log("Link i ri imazhi u vendos:", newPublicId);
         }
         
         const languagesForDb = JSON.parse(languages || '[]');
-        
         const query = `
             UPDATE books SET title = $1, price = $2, image = $3, genre = $4, author = $5, "longDescription" = $6, 
             pershkrimi = $7, botimi = $8, page = $9, year = $10, "offerPrice" = $11, languages = $12, quantity = $13 
             WHERE id = $14 RETURNING *;`;
         const values = [
-            title, parseFloat(price) || 0, newImagePath, (genre || '').split(','), author, longDescription,
+            title, parseFloat(price) || 0, newPublicId, (genre || '').split(','), author, longDescription,
             pershkrimi, botimi, parseInt(page, 10) || null, parseInt(year, 10) || null,
             parseFloat(offerPrice) || null, JSON.stringify(languagesForDb), parseInt(quantity, 10) || 0, bookId
         ];
         
         const result = await pool.query(query, values);
 
-            if (isNewImage && oldImagePath) {
-            await deleteFromCloudinary(oldImagePath);
+        if (shouldDeleteOldImage && oldPublicId) {
+            await deleteFromCloudinary(oldPublicId);
         }
         
         res.json({ message: 'Libri u përditësua me sukses!', book: result.rows[0] });
@@ -228,12 +227,12 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         
         const oldImagePath = existingRows[0].image_url;
         let newImagePath = oldImagePath;
-        let isNewImage = false;
+        let shouldDeleteOld = false;
 
         if (req.file) {
             const uploadResult = await uploadToCloudinary(req.file.buffer);
-            newImagePath = uploadResult.secure_url;
-            isNewImage = true;
+            newImagePath = uploadResult.public_id;
+            shouldDeleteOld = true;
         }
 
         const query = `UPDATE featured_authors SET name = $1, nationality = $2, description = $3, image_url = $4 WHERE id = $5 RETURNING *;`;
@@ -241,7 +240,7 @@ app.put('/api/featured-authors/:id', upload.single('image'), async (req, res) =>
         
         const result = await pool.query(query, values);
         
-        if (isNewImage && oldImagePath) {
+        if (shouldDeleteOld && oldImagePath) {
             await deleteFromCloudinary(oldImagePath);
         }
         
@@ -342,7 +341,6 @@ app.post('/api/books/remove-all-offers', async (req, res) => {
         handleServerError(res, err, 'Gabim gjatë heqjes së ofertave.');
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Serveri po funksionon në portin ${port}`);
