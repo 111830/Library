@@ -12,33 +12,46 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 const initslider = () => {
-  const sliders = document.querySelectorAll('.slider-wrapper');
-  sliders.forEach(slider => {
-    const bookList = slider.querySelector('.book-list');
-    const prevSlideBtn = slider.querySelector('.prev-slide');
-    const nextSlideBtn = slider.querySelector('.next-slide');
-    const handleSlideButtons = () => {
-      if (!bookList || !prevSlideBtn || !nextSlideBtn) return;
-      prevSlideBtn.style.display = bookList.scrollLeft > 1 ? "block" : "none";
-      let isAtEnd = bookList.scrollLeft + bookList.clientWidth >= bookList.scrollWidth - 1;
-      nextSlideBtn.style.display = isAtEnd ? "none" : "block";
-    };
-    if (prevSlideBtn) {
-      prevSlideBtn.addEventListener('click', () => {
-        bookList.scrollBy({ left: -bookList.clientWidth, behavior: 'smooth' });
-      });
-    }
-    if (nextSlideBtn) {
-      nextSlideBtn.addEventListener('click', () => {
-        bookList.scrollBy({ left: bookList.clientWidth, behavior: 'smooth' });
-      });
-    }
-    if (bookList) {
-      bookList.addEventListener('scroll', handleSlideButtons);
-    }
-    window.addEventListener('load', handleSlideButtons);
-    window.addEventListener('resize', handleSlideButtons);
-  });
+    const sliders = document.querySelectorAll('.slider-wrapper');
+    sliders.forEach(slider => {
+        const bookList = slider.querySelector('.book-list');
+        // Gjejmë butonat bazuar në klasën e tyre, jo id-në.
+        const slideButtons = slider.querySelectorAll('.slide-button');
+        const prevSlideBtn = slideButtons[0]; // Butoni i parë është gjithmonë "prev"
+        const nextSlideBtn = slideButtons[1]; // Butoni i dytë është gjithmonë "next"
+
+        const handleSlideButtons = () => {
+            if (!bookList || !prevSlideBtn || !nextSlideBtn) return;
+            // Logjika për të shfaqur ose fshehur butonat
+            prevSlideBtn.style.display = bookList.scrollLeft > 1 ? "block" : "none";
+            const isAtEnd = bookList.scrollWidth - bookList.scrollLeft <= bookList.clientWidth + 1;
+            nextSlideBtn.style.display = isAtEnd ? "none" : "block";
+        };
+
+        if (prevSlideBtn) {
+            prevSlideBtn.addEventListener('click', () => {
+                bookList.scrollBy({ left: -bookList.clientWidth, behavior: 'smooth' });
+            });
+        }
+
+        if (nextSlideBtn) {
+            nextSlideBtn.addEventListener('click', () => {
+                bookList.scrollBy({ left: bookList.clientWidth, behavior: 'smooth' });
+            });
+        }
+        
+        if (bookList) {
+            bookList.addEventListener('scroll', handleSlideButtons);
+        }
+
+        // Sigurohemi që butonat të shfaqen/fshihen saktë kur faqja ngarkohet ose ndryshon madhësinë
+        window.addEventListener('load', handleSlideButtons);
+        window.addEventListener('resize', handleSlideButtons);
+
+        // Thirrje fillestare për të vendosur gjendjen e duhur të butonave
+        // e shtuar për siguri nëse eventi 'load' ka ndodhur tashmë
+        setTimeout(handleSlideButtons, 100);
+    });
 };
 
 initslider();
