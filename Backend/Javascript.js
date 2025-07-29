@@ -15,8 +15,8 @@ const initslider = () => {
   const sliders = document.querySelectorAll('.slider-wrapper');
   sliders.forEach(slider => {
     const bookList = slider.querySelector('.book-list');
-    const prevSlideBtn = slider.querySelector('#prev-slide');
-    const nextSlideBtn = slider.querySelector('#next-slide');
+    const prevSlideBtn = slider.querySelector('.prev-slide');
+    const nextSlideBtn = slider.querySelector('.next-slide');
     const handleSlideButtons = () => {
       if (!bookList || !prevSlideBtn || !nextSlideBtn) return;
       prevSlideBtn.style.display = bookList.scrollLeft > 1 ? "block" : "none";

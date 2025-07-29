@@ -98,12 +98,14 @@ app.get('/api/book/search', async (req, res) => {
     const query = req.query.title;
     if (!query || query.length < 2) return res.json([]);
     try {
-        const bookQuery = 'SELECT \'book\' as type, id, title as name, image FROM books WHERE title ILIKE $1 ORDER BY name ASC LIMIT 7';
-        const authorQuery = 'SELECT \'author\' as type, NULL as id, author as name, NULL as image FROM books WHERE author ILIKE $1 GROUP BY author ORDER BY name ASC LIMIT 3';
-        
+        // Normalize query by replacing diacritics
+        const normalizedQuery = query.replace(/ë/g, 'e').replace(/ç/g, 'c');
+        const bookQuery = "SELECT 'book' as type, id, title as name, image FROM books WHERE translate(title, 'ëç', 'ec') ILIKE $1 ORDER BY name ASC LIMIT 7";
+        const authorQuery = "SELECT 'author' as type, NULL as id, author as name, NULL as image FROM books WHERE translate(author, 'ëç', 'ec') ILIKE $1 GROUP BY author ORDER BY name ASC LIMIT 3";
+
         const [bookResults, authorResults] = await Promise.all([
-            pool.query(bookQuery, [`%${query}%`]),
-            pool.query(authorQuery, [`%${query}%`])
+            pool.query(bookQuery, [`%${normalizedQuery}%`]),
+            pool.query(authorQuery, [`%${normalizedQuery}%`])
         ]);
 
         const booksWithFullUrls = bookResults.rows.map(book => ({
