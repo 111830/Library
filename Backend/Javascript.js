@@ -300,7 +300,17 @@ window.addEventListener('popstate', function (event) {
           searchResults.innerHTML = '<div class="search-result-item">Gabim në server</div>';
         }
       });
+
+}
+
+// Ky kod i ri menaxhon mbylljen e dritares se kerkimit kur klikon jashte saj
+document.addEventListener('click', (e) => {
+    if (searchBar && !searchBar.contains(e.target)) {
+        if (searchResults) {
+            searchResults.style.display = 'none';
+        }
     }
+});
 
     const checkOutBtn = document.querySelector('.checkOut');
     const checkout = document.getElementById('checkout');
